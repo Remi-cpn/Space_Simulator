@@ -51,7 +51,7 @@ La physique de la lumière vit dans le shader.
 ### Phase 0 — Socle GPU
 > Objectif : un pipeline de contrôle total.
 
-- [ ] Fenêtre SDL2 + contexte OpenGL.
+- [x] Fenêtre SDL2 + contexte OpenGL.
 - [ ] Compilation de shaders avec **affichage des logs d'erreur** (ton seul
       ami pour le debug GLSL — soigne-le dès maintenant).
 - [ ] Fullscreen quad + fragment shader affichant un dégradé UV.
