@@ -1,4 +1,4 @@
-# Laniakea — Simulation d'espace en rendu relativiste
+# Simulation d'espace en rendu relativiste
 
 Simulation d'espace en C/GLSL rendue par raytracing relativiste : la lumière
 est intégrée le long des géodésiques de l'espace-temps. Trous noirs,
