@@ -15,8 +15,8 @@
 #include "../library/libft/libft.h"
 
 /* ——— Lib Graphique ———————————————————————————————————————————————————————— */
+#include "../external/glad/include/glad/gl.h"
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
 
 
 /* ——— Define ——————————————————————————————————————————————————————————————— */

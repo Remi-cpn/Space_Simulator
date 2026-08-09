@@ -52,8 +52,7 @@ La physique de la lumière vit dans le shader.
 > Objectif : un pipeline de contrôle total.
 
 - [x] Fenêtre SDL2 + contexte OpenGL.
-- [ ] Compilation de shaders avec **affichage des logs d'erreur** (ton seul
-      ami pour le debug GLSL — soigne-le dès maintenant).
+- [ ] Compilation de shaders avec **affichage des logs d'erreur**.
 - [ ] Fullscreen quad + fragment shader affichant un dégradé UV.
 - [ ] Boucle de rendu, gestion du resize, uniform `time` animé.
 
