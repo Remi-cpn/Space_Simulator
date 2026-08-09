@@ -36,7 +36,7 @@ se réduit à une équation d'orbite 2D par rayon.
 |------------------|------------------------------------------|
 | Langage hôte     | C                                        |
 | Fenêtre / input  | SDL2                                     |
-| GPU              | OpenGL (core profile) + GLSL             |
+| GPU              | OpenGL + GLSL                            |
 | Rendu            | Fullscreen quad + fragment shader        |
 | Physique lumière | Intégration RK4 **dans le fragment shader** (1 pixel = 1 géodésique) |
 | Dynamique corps  | Moteur N-corps newtonien hérité du RT (réintégré en v3) |
@@ -51,9 +51,8 @@ La physique de la lumière vit dans le shader.
 ### Phase 0 — Socle GPU
 > Objectif : un pipeline de contrôle total.
 
-- [ ] Fenêtre SDL2 + contexte OpenGL.
-- [ ] Compilation de shaders avec **affichage des logs d'erreur** (ton seul
-      ami pour le debug GLSL — soigne-le dès maintenant).
+- [x] Fenêtre SDL2 + contexte OpenGL.
+- [ ] Compilation de shaders avec **affichage des logs d'erreur**.
 - [ ] Fullscreen quad + fragment shader affichant un dégradé UV.
 - [ ] Boucle de rendu, gestion du resize, uniform `time` animé.
 

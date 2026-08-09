@@ -9,6 +9,7 @@ NAME 		= Space_Simulator
 CC			= cc
 CFLAGS		= -Wall -Wextra -Werror -g
 LFLAGS		= -lSDL2 -lm -lpthread -lGL -ldl
+INCLUDES	= -I$(INC_DIR) -Iexternal/glad/include
 RM			= rm -f
 SETUP 		:= ./scripts/setup.sh
 
@@ -23,7 +24,7 @@ LIBFT_A		= $(LIBFT_DIR)/libft.a
 
 
 # ——— Sous-dossiers sources —————————————————————————————————————————————————— #
-SUB_DIRS 	:= exit init
+SUB_DIRS 	:= exit init debug
 
 
 # ——— Sources ———————————————————————————————————————————————————————————————— #
@@ -31,11 +32,14 @@ SRC_INIT	= init_program.c
 
 SRC_EXIT	= exit_program.c
 
+SRC_DEBUG	= debug.c \
+			  gl_debug.c
+
 
 VPATH 		:= $(SRC_DIR) \
          		$(addprefix $(SRC_DIR)/, $(SUB_DIRS))
 
-SRCS		= main.c $(SRC_INIT) $(SRC_EXIT)
+SRCS		= main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG)
 
 OBJ			= ${SRCS:%.c=$(OBJ_DIR)/%.o}
 
@@ -57,13 +61,13 @@ RED         = \033[38;5;210m
 all: $(LIBFT_A) $(NAME)
 
 $(NAME): check-deps $(OBJ)
-	@$(CC) $(CFLAGS) -I$(INC_DIR) $(OBJ) -o $(NAME) $(LIBFT_A) $(LFLAGS)
+	@$(CC) $(CFLAGS) $(INCLUDES) $(OBJ) -o $(NAME) $(LIBFT_A) $(LFLAGS)
 	@printf "\r\033[2K$(CYAN)📝 Sources     $(BOLD)$(GREEN)[OK]$(R)\n"
 	@printf "$(BOLD)$(GREEN)\n    ✅  Space_Simulator compiled successfully\n\n$(R)"
 
 $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(@D)
-	@$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
+	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 	@printf "\r\033[2K$(CYAN)📝 Compiling   %s$(R)" "$<"
 
 $(LIBFT_A):

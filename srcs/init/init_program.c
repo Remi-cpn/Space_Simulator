@@ -39,6 +39,10 @@ static void	init_SDL(t_data *d)
 	d->ctx = SDL_GL_CreateContext(d->win);
 	if (!d->ctx)
 		exit_prog(d, ERROR_SDL_CONTEXT, SDL_GetError());
+
+	// Chargement de glad qui donne accès aux fonctions OpenGL modernes
+	gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
+
 }
 
 t_data	init_program(void)
