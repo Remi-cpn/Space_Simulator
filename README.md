@@ -37,14 +37,28 @@ se réduit à une équation d'orbite 2D par rayon.
 | Langage hôte     | C                                        |
 | Fenêtre / input  | SDL2                                     |
 | GPU              | OpenGL + GLSL                            |
-| Rendu            | Fullscreen quad + fragment shader        |
-| Physique lumière | Intégration RK4 **dans le fragment shader** (1 pixel = 1 géodésique) |
+| Rendu            | Compute shader (`image2D` + `imageStore`) + blit vers l'écran |
+| Physique lumière | Intégration RK4 **dans le compute shader** (1 pixel = 1 géodésique) |
 | Dynamique corps  | Moteur N-corps newtonien hérité du RT (réintégré en v3) |
 
 Le CPU orchestre : fenêtre, événements, uniforms (caméra, scène, paramètres).
 La physique de la lumière vit dans le shader.
 
 ---
+
+## Rendu par shaders
+
+Aucune boucle sur les pixels n'existe dans le code C : le calcul de
+l'image est délégué au GPU. Le programme dispatch un compute shader écrit en GLSL
+(compilé par le driver au lancement, d'où le module shader.c qui récupère les logs du
+compilateur GPU) : une invocation par pixel, en parallèle, écrit directement dans une
+texture via `imageStore`. Chaque invocation déduit son rayon, l'intègre le long de sa
+géodésique, et écrit une couleur. L'image est ensuite présentée à l'écran par un blit
+(`glBlitFramebuffer`), sans jamais passer par le pipeline vertex/fragment. Le code C
+n'est que l'orchestrateur : fenêtre, événements, et envoi des uniforms (caméra, masse,
+paramètres) qui alimentent le shader à chaque frame.
+
+# Roadmap
 
 ## v1 — Le trou noir (validation du moteur)
 
@@ -53,10 +67,9 @@ La physique de la lumière vit dans le shader.
 
 - [x] Fenêtre SDL2 + contexte OpenGL.
 - [ ] Compilation de shaders avec **affichage des logs d'erreur**.
-- [ ] Fullscreen quad + fragment shader affichant un dégradé UV.
+- [ ] Compute shader écrivant un dégradé UV dans une texture (`imageStore`) + présentation par blit (`glBlitFramebuffer`).
 - [ ] Boucle de rendu, gestion du resize, uniform `time` animé.
 
-**Validation :** dégradé fluide, 60 fps, aucun warning de compilation shader.
 
 ### Phase 1 — Ciel étoilé, rayons droits
 > Objectif : reconstruire l'« univers témoin » du RT, dans le shader.
@@ -68,7 +81,6 @@ La physique de la lumière vit dans le shader.
 - [ ] Contrôles caméra basiques (souris = orientation).
 
 **Validation :** ciel identique au fond du RT, navigation fluide.
-Référence visuelle : toute déformation future se lit par rapport à elle.
 
 ### Phase 2 — Théorie (papier, pas de code)
 > Objectif : comprendre chaque terme avant de l'intégrer.

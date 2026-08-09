@@ -24,7 +24,7 @@ LIBFT_A		= $(LIBFT_DIR)/libft.a
 
 
 # ——— Sous-dossiers sources —————————————————————————————————————————————————— #
-SUB_DIRS 	:= exit init debug
+SUB_DIRS 	:= exit init debug shaders
 
 
 # ——— Sources ———————————————————————————————————————————————————————————————— #
@@ -35,11 +35,13 @@ SRC_EXIT	= exit_program.c
 SRC_DEBUG	= debug.c \
 			  gl_debug.c
 
+SRC_SHADER	= shader.c
+
 
 VPATH 		:= $(SRC_DIR) \
          		$(addprefix $(SRC_DIR)/, $(SUB_DIRS))
 
-SRCS		= main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG)
+SRCS		= main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER)
 
 OBJ			= ${SRCS:%.c=$(OBJ_DIR)/%.o}
 

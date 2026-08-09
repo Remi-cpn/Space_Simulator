@@ -4,6 +4,7 @@
 
 #include "includes/data.h"
 #include "includes/exit.h"
+#include "includes/debug.h"
 
 static t_input	init_input(void)
 {
@@ -42,7 +43,10 @@ static void	init_SDL(t_data *d)
 
 	// Chargement de glad qui donne accès aux fonctions OpenGL modernes
 	gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
-
+	// Setup du system de debug
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback(gl_debug_callback, NULL);
 }
 
 t_data	init_program(void)
