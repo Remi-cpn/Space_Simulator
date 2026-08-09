@@ -3,13 +3,7 @@
 /* ************************************************************************** */
 
 #include "includes/exit.h"
-
-static void	print_error(const char *message)
-{
-	ft_putstr_fd("Error: ", 2);
-	ft_putstr_fd((char *)message, 2);
-	ft_putstr_fd("\n", 2);
-}
+#include "../includes/debug.h"
 
 void	exit_prog(t_data *d, int exit_code, const char *error_message)
 {

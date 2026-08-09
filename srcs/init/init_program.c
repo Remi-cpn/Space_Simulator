@@ -42,6 +42,7 @@ static void	init_SDL(t_data *d)
 
 	// Chargement de glad qui donne accès aux fonctions OpenGL modernes
 	gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
+
 }
 
 t_data	init_program(void)

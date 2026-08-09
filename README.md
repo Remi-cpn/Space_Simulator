@@ -36,7 +36,7 @@ se réduit à une équation d'orbite 2D par rayon.
 |------------------|------------------------------------------|
 | Langage hôte     | C                                        |
 | Fenêtre / input  | SDL2                                     |
-| GPU              | OpenGL (core profile) + GLSL             |
+| GPU              | OpenGL + GLSL                            |
 | Rendu            | Fullscreen quad + fragment shader        |
 | Physique lumière | Intégration RK4 **dans le fragment shader** (1 pixel = 1 géodésique) |
 | Dynamique corps  | Moteur N-corps newtonien hérité du RT (réintégré en v3) |
