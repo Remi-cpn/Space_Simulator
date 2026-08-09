@@ -17,20 +17,25 @@ SETUP 		:= ./scripts/setup.sh
 SRC_DIR		= srcs
 OBJ_DIR		= obj
 INC_DIR		= includes
+LIBFT_DIR	= library/libft
+
+LIBFT_A		= $(LIBFT_DIR)/libft.a
 
 
 # ——— Sous-dossiers sources —————————————————————————————————————————————————— #
-SUB_DIRS 	:= 
+SUB_DIRS 	:= exit init
 
 
 # ——— Sources ———————————————————————————————————————————————————————————————— #
+SRC_INIT	= init_program.c
 
+SRC_EXIT	= exit_program.c
 
 
 VPATH 		:= $(SRC_DIR) \
          		$(addprefix $(SRC_DIR)/, $(SUB_DIRS))
 
-SRCS		= main.c
+SRCS		= main.c $(SRC_INIT) $(SRC_EXIT)
 
 OBJ			= ${SRCS:%.c=$(OBJ_DIR)/%.o}
 
@@ -49,10 +54,10 @@ RED         = \033[38;5;210m
 
 
 # ——— Rules ————————————————————————————————————————————————————————————————— #
-all: $(NAME)
+all: $(LIBFT_A) $(NAME)
 
 $(NAME): check-deps $(OBJ)
-	@$(CC) $(CFLAGS) -I$(INC_DIR) $(OBJ) -o $(NAME) $(LFLAGS)
+	@$(CC) $(CFLAGS) -I$(INC_DIR) $(OBJ) -o $(NAME) $(LIBFT_A) $(LFLAGS)
 	@printf "\r\033[2K$(CYAN)📝 Sources     $(BOLD)$(GREEN)[OK]$(R)\n"
 	@printf "$(BOLD)$(GREEN)\n    ✅  Space_Simulator compiled successfully\n\n$(R)"
 
@@ -60,6 +65,10 @@ $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 	@printf "\r\033[2K$(CYAN)📝 Compiling   %s$(R)" "$<"
+
+$(LIBFT_A):
+	@make -s -C $(LIBFT_DIR)
+	@printf "\r\033[2K$(CYAN)📚 Libft       $(BOLD)$(GREEN)[OK]$(R)\n"
 
 check-deps:
 	@command -v sdl2-config >/dev/null 2>&1 || { \
@@ -70,10 +79,12 @@ check-deps:
 	}
 
 clean:
+	@make clean -s -C $(LIBFT_DIR)
 	@$(RM) -r $(OBJ_DIR)
 	@printf "$(CYAN)🗑  Object files removed$(R)\n"
 
 fclean: clean
+	@make fclean -s -C $(LIBFT_DIR)
 	@$(RM) $(NAME)
 	@printf "$(CYAN)🗑  Executable removed$(R)\n"
 
