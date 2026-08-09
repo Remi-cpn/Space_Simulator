@@ -17,6 +17,6 @@
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */
 char	*read_source_compute_shader(t_data *d, char *shader_name);
-//GLuint create_shader_program(const char *vertex_path, const char *fragment_path);
+GLuint	create_compute_shader(t_data *d, char *shader_name);
 
 #endif

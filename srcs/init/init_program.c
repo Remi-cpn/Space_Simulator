@@ -31,6 +31,9 @@ static void	init_SDL(t_data *d)
 	// Pour un rendu hors écran
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+	// Pour erreur de compilation des shaders
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
 	// Initialisation de la fenêtre
 	d->win = SDL_CreateWindow("Space_Simulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
 	if (!d->win)
@@ -40,13 +43,6 @@ static void	init_SDL(t_data *d)
 	d->ctx = SDL_GL_CreateContext(d->win);
 	if (!d->ctx)
 		exit_prog(d, ERROR_SDL_CONTEXT, SDL_GetError());
-
-	// Chargement de glad qui donne accès aux fonctions OpenGL modernes
-	gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
-	// Setup du system de debug
-	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(gl_debug_callback, NULL);
 }
 
 t_data	init_program(void)
@@ -54,7 +50,17 @@ t_data	init_program(void)
 	t_data	d;
 
 	ft_memset(&d, 0, sizeof(t_data));
+
 	init_SDL(&d);
+	
+	// Chargement de glad qui donne accès aux fonctions OpenGL modernes
+	gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
+
+	// Setup du system de debug
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback(gl_debug_callback, NULL);
+
 	d.input = init_input();
 	d.cam_target = -1;
 	return (d);

@@ -23,12 +23,18 @@
 # define ERROR_FILE_SHADER_OPEN -5
 # define ERROR_FILE_SHADER_FSTAT -6
 # define ERROR_FILE_SHADER_READ -7
+# define ERROR_FILE_SHADER_EMPTY -8
+# define ERROR_SHADER_COMPILE -9
+# define ERROR_SHADER_LINK -10
 
 // Exit messages
 # define ERROR_MALLOC_MSG "Failed to allocate memory"
 # define ERROR_FILE_SHADER_OPEN_MSG "Unable to open the shader file"
 # define ERROR_FILE_SHADER_FSTAT_MSG "Error when using fstat on shader"
 # define ERROR_FILE_SHADER_READ_MSG "Invalid read shader file"
+# define ERROR_FILE_SHADER_EMPTY_MSG "Empty shader file"
+# define ERROR_SHADER_COMPILE_MSG "Invalid shader compilation"
+# define ERROR_SHADER_LINK_MSG "Invalid shader link"
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
 typedef struct s_data		t_data;
