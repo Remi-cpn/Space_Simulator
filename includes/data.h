@@ -32,7 +32,7 @@ typedef struct s_input	t_input;
 typedef struct s_data
 {
 	SDL_Window		*win;
-	SDL_GLContext	*ctx;
+	SDL_GLContext	ctx;
 	t_input			input;
 	int				cam_target;
 }	t_data;
