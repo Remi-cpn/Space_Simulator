@@ -6,6 +6,26 @@
 #include "includes/exit.h"
 #include "includes/debug.h"
 
+static void	init_image(t_data *d)
+{
+	glGenTextures(1, &(d->img));
+	glBindTexture(GL_TEXTURE_2D, d->img);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, WIN_W, WIN_H);
+
+	// Rend la texture accessible dans le shader
+	// 0 est l'emplacement
+	glBindImageTexture(0, d->img, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+	// Framebuffer Object
+	// Rend cette texture éligible comme source de blit.
+	glGenFramebuffers(1, &(d->fbo));
+	glBindFramebuffer(GL_FRAMEBUFFER, d->fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d->img, 0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		exit_prog(d, ERROR_FBO_INIT, ERROR_FBO_INIT_MSG);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 static t_input	init_input(void)
 {
 	t_input	i;
@@ -52,7 +72,7 @@ t_data	init_program(void)
 	ft_memset(&d, 0, sizeof(t_data));
 
 	init_SDL(&d);
-	
+
 	// Chargement de glad qui donne accès aux fonctions OpenGL modernes
 	gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
 
@@ -60,6 +80,8 @@ t_data	init_program(void)
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(gl_debug_callback, NULL);
+
+	init_image(&d);
 
 	d.input = init_input();
 	d.cam_target = -1;

@@ -14,18 +14,23 @@
 
 /* ——— Define exit messages (negative values is personal error codes) ——————— */
 // Exit codes
-# define EXIT_SUCCESS 0
-# define EXIT_ERROR 1
-# define ERROR_MALLOC -1
-# define ERROR_SDL_INIT -2
-# define ERROR_SDL_WINDOW -3
-# define ERROR_SDL_CONTEXT -4
-# define ERROR_FILE_SHADER_OPEN -5
-# define ERROR_FILE_SHADER_FSTAT -6
-# define ERROR_FILE_SHADER_READ -7
-# define ERROR_FILE_SHADER_EMPTY -8
-# define ERROR_SHADER_COMPILE -9
-# define ERROR_SHADER_LINK -10
+	# define EXIT_SUCCESS 0
+	# define EXIT_ERROR 1
+	# define ERROR_MALLOC -1
+
+// Init
+	# define ERROR_SDL_INIT -20
+	# define ERROR_SDL_WINDOW -21
+	# define ERROR_SDL_CONTEXT -22
+	# define ERROR_FBO_INIT -23
+
+// Shaders
+	# define ERROR_FILE_SHADER_OPEN -30
+	# define ERROR_FILE_SHADER_FSTAT -31
+	# define ERROR_FILE_SHADER_READ -32
+	# define ERROR_FILE_SHADER_EMPTY -33
+	# define ERROR_SHADER_COMPILE -34
+	# define ERROR_SHADER_LINK -35
 
 // Exit messages
 # define ERROR_MALLOC_MSG "Failed to allocate memory"
@@ -35,6 +40,7 @@
 # define ERROR_FILE_SHADER_EMPTY_MSG "Empty shader file"
 # define ERROR_SHADER_COMPILE_MSG "Invalid shader compilation"
 # define ERROR_SHADER_LINK_MSG "Invalid shader link"
+# define ERROR_FBO_INIT_MSG "Failed to init fbo"
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
 typedef struct s_data		t_data;

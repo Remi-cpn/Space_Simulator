@@ -33,6 +33,8 @@ typedef struct s_data
 {
 	SDL_Window		*win;
 	SDL_GLContext	ctx;
+	GLuint			img;
+	GLuint			fbo;
 	t_input			input;
 	int				cam_target;
 }	t_data;
