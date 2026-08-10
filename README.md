@@ -66,8 +66,8 @@ paramètres) qui alimentent le shader à chaque frame.
 > Objectif : un pipeline de contrôle total.
 
 - [x] Fenêtre SDL2 + contexte OpenGL.
-- [ ] Compilation de shaders avec **affichage des logs d'erreur**.
-- [ ] Compute shader écrivant un dégradé UV dans une texture (`imageStore`) + présentation par blit (`glBlitFramebuffer`).
+- [x] Compilation de shaders avec **affichage des logs d'erreur**.
+- [x] Compute shader écrivant un dégradé UV dans une texture (`imageStore`) + présentation par blit (`glBlitFramebuffer`).
 - [ ] Boucle de rendu, gestion du resize, uniform `time` animé.
 
 

@@ -1,0 +1,18 @@
+#version 430
+layout(local_size_x = 16, local_size_y = 16) in;
+layout(binding = 0, rgba8) uniform image2D outImg;
+
+
+void main()
+{
+	ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 size  = imageSize(outImg);
+
+	if (pixel.x >= size.x || pixel.y >= size.y || size.x == 0 || size.y == 0)
+		return;
+
+	vec2 uv = vec2(pixel) / vec2(size);
+
+
+	imageStore(outImg, pixel, vec4(uv.x, uv.y, 0.0, 1.0));
+}
