@@ -11,7 +11,7 @@
 
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
-#include "events.h"
+#include "events/events.h"
 #include "../library/libft/libft.h"
 
 /* ——— Lib Graphique ———————————————————————————————————————————————————————— */

@@ -2,7 +2,7 @@
 /*   Space_Simulator — debug.c                                                */
 /* ************************************************************************** */
 
-#include "../../includes/debug.h"
+#include "debug.h"
 
 void	print_error(const char *message)
 {

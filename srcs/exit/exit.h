@@ -10,7 +10,7 @@
 
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
-#include "data.h"
+#include "../data.h"
 
 /* ——— Define exit messages (negative values is personal error codes) ——————— */
 // Exit codes

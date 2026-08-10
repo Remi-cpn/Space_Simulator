@@ -2,10 +2,10 @@
 /*   Space_Simulator — init_program.c                                         */
 /* ************************************************************************** */
 
-#include "../../includes/data.h"
-#include "../../includes/exit.h"
-#include "../../includes/debug.h"
-#include "../../includes/shader.h"
+#include "../data.h"
+#include "../exit/exit.h"
+#include "../debug/debug.h"
+#include "../shaders/shader.h"
 
 static t_input	init_input(void)
 {

@@ -1,0 +1,4 @@
+/Space_Simulator
+/obj/
+library/libft/*.o
+library/libft/libft.a
