@@ -6,10 +6,10 @@
 # define DEBUG_H
 
 
-#include "../external/glad/include/glad/gl.h"
+#include "../../external/glad/include/glad/gl.h"
 #include <SDL2/SDL.h>
 
-#include "../library/libft/libft.h"
+#include "../../library/libft/libft.h"
 
 #ifndef APIENTRY
 # define APIENTRY

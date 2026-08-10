@@ -2,9 +2,9 @@
 /*   Space_Simulator — init_image.c                                           */
 /* ************************************************************************** */
 
-#include "../../includes/data.h"
-#include "../../includes/exit.h"
-#include "../../includes/debug.h"
+#include "../data.h"
+#include "../exit/exit.h"
+#include "../debug/debug.h"
 
 void	init_resize_image(t_data *d, int new_w, int new_h)
 {

@@ -9,7 +9,7 @@ NAME 		= Space_Simulator
 CC			= cc
 CFLAGS		= -Wall -Wextra -Werror -g
 LFLAGS		= -lSDL2 -lm -lpthread -lGL -ldl
-INCLUDES	= -I$(INC_DIR) -Iexternal/glad/include
+INCLUDES	= -Iexternal/glad/include -Iexternal/stb
 RM			= rm -f
 SETUP 		:= ./scripts/setup.sh
 
@@ -17,7 +17,6 @@ SETUP 		:= ./scripts/setup.sh
 # ——— Dossier cible —————————————————————————————————————————————————————————— #
 SRC_DIR		= srcs
 OBJ_DIR		= obj
-INC_DIR		= includes
 LIBFT_DIR	= library/libft
 
 LIBFT_A		= $(LIBFT_DIR)/libft.a
@@ -29,7 +28,8 @@ SUB_DIRS 	:= exit init debug shaders events
 
 # ——— Sources ———————————————————————————————————————————————————————————————— #
 SRC_INIT	= init_program.c \
-			  init_image.c
+			  init_image.c \
+			  init_texture.c
 
 SRC_EXIT	= exit_program.c
 
@@ -44,7 +44,7 @@ SRC_EVENTS	= poll_events.c
 VPATH 		:= $(SRC_DIR) \
          		$(addprefix $(SRC_DIR)/, $(SUB_DIRS))
 
-SRCS		= main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS)
+SRCS		= srcs/main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS)
 
 OBJ			= ${SRCS:%.c=$(OBJ_DIR)/%.o}
 

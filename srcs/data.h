@@ -11,7 +11,7 @@
 
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
-#include "events.h"
+#include "events/events.h"
 #include "../library/libft/libft.h"
 
 /* ——— Lib Graphique ———————————————————————————————————————————————————————— */
@@ -29,16 +29,32 @@
 typedef struct s_input	t_input;
 
 
-/* ——— Structs data ————————————————————————————————————————————————————————— */
+/* ——— Struct texture ——————————————————————————————————————————————————————— */
+typedef struct s_texture
+{
+	char	*path;
+	GLuint	id;
+}	t_texture;
+
+
+/* ——— Struct data —————————————————————————————————————————————————————————— */
 typedef struct s_data
 {
-	SDL_Window		*win;
-	int				win_h;
-	int				win_w;
-	SDL_GLContext	ctx;
+	// Window
+		SDL_Window		*win;
+		int				win_h;
+		int				win_w;
+		SDL_GLContext	ctx;
+
 	GLuint			img;
 	GLuint			fbo;
 	GLuint			program;
+
+	//Textures
+		t_texture		*tex;
+		int				tex_count;
+		int				tex_capacity;
+
 	t_input			input;
 	int				cam_target;
 }	t_data;
@@ -49,5 +65,6 @@ typedef struct s_data
 t_data	init_program(void);
 void	init_image(t_data *d);
 void	init_resize_image(t_data *d, int new_w, int new_h);
+GLuint	load_texture(t_data *d, char *path);
 
 #endif

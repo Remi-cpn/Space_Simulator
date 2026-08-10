@@ -2,8 +2,8 @@
 /*   Space_Simulator — shader.c                                               */
 /* ************************************************************************** */
 
-#include "../../includes/shader.h"
-#include "../../includes/exit.h"
+#include "shader.h"
+#include "../exit/exit.h"
 
 char	*read_source_compute_shader(t_data *d, char *shader_name)
 {

@@ -3,7 +3,7 @@
 /*   Callback de debug OpenGL : le driver l'appelle seul en cas de problème.  */
 /* ************************************************************************** */
 
-#include "../../includes/debug.h"
+#include "debug.h"
 
 #ifndef APIENTRY
 # define APIENTRY

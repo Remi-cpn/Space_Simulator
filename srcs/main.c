@@ -2,9 +2,9 @@
 /*   Space_Simulator — main.c                                                 */
 /* ************************************************************************** */
 
-#include "includes/data.h"
-#include "includes/exit.h"
-#include "includes/events.h"
+#include "data.h"
+#include "exit/exit.h"
+#include "events/events.h"
 
 int	main(int ac, char **av)
 {

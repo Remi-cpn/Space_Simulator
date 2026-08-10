@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_realloc.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tseche <tseche@student.42.fr>              +#+  +:+       +#+        */
+/*   By: rcompain <rcompain@student.42angouleme.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 15:55:19 by tseche            #+#    #+#             */
-/*   Updated: 2026/03/06 18:09:17 by tseche           ###   ########.fr       */
+/*   Updated: 2026/08/10 23:24:43 by rcompain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,9 @@ void	*ft_realloc(void *p, size_t old_size, size_t new_size, size_t bit)
 	ptr = malloc(new_size * bit);
 	if (!ptr)
 		return (NULL);
+	ft_memset(ptr, 0, new_size * bit);
 	if (!p)
-	{
-		ft_memset(ptr, 0, new_size * bit);
 		return (ptr);
-	}
 	copy_size = new_size;
 	if (old_size < new_size)
 		copy_size = old_size;

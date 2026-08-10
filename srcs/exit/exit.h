@@ -10,7 +10,7 @@
 
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
-#include "data.h"
+#include "../data.h"
 
 /* ——— Define exit messages (negative values is personal error codes) ——————— */
 // Exit codes
@@ -23,6 +23,7 @@
 	# define ERROR_SDL_WINDOW -21
 	# define ERROR_SDL_CONTEXT -22
 	# define ERROR_FBO_INIT -23
+	# define ERROR_TEXTURE_LOAD -24
 
 // Shaders
 	# define ERROR_FILE_SHADER_OPEN -30
@@ -41,6 +42,7 @@
 # define ERROR_SHADER_COMPILE_MSG "Invalid shader compilation"
 # define ERROR_SHADER_LINK_MSG "Invalid shader link"
 # define ERROR_FBO_INIT_MSG "Failed to init fbo"
+# define ERROR_TEXTURE_LOAD_MSG "Failed to init texture"
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
 typedef struct s_data		t_data;
