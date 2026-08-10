@@ -7,6 +7,8 @@
 
 void	exit_prog(t_data *d, int exit_code, const char *error_message)
 {
+	int	i;
+
 	if (error_message)
 		print_error(error_message);
 	if (d->ctx)
@@ -19,6 +21,17 @@ void	exit_prog(t_data *d, int exit_code, const char *error_message)
 		glDeleteTextures(1, &(d->img));
 	if (d->program)
 		glDeleteProgram(d->program);
+	if (d->tex)
+	{
+		i = 0;
+		while (i < d->tex_count)
+		{
+			free(d->tex[i].path);
+			glDeleteTextures(1, &(d->tex[i].id));
+			i++;
+		}
+		free(d->tex);
+	}
 	SDL_Quit();
 
 	if (exit_code < 0)
