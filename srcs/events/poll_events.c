@@ -2,8 +2,8 @@
 /*   Space_Simulator — poll_events.c                                          */
 /* ************************************************************************** */
 
-#include "includes/events.h"
-#include "includes/data.h"
+#include "../../includes/events.h"
+#include "../../includes/data.h"
 
 static bool	key_event(t_data *d, SDL_Event ev)
 {
