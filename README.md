@@ -68,7 +68,7 @@ paramètres) qui alimentent le shader à chaque frame.
 - [x] Fenêtre SDL2 + contexte OpenGL.
 - [x] Compilation de shaders avec **affichage des logs d'erreur**.
 - [x] Compute shader écrivant un dégradé UV dans une texture (`imageStore`) + présentation par blit (`glBlitFramebuffer`).
-- [ ] Boucle de rendu, gestion du resize, uniform `time` animé.
+- [x] Boucle de rendu, gestion du resize.
 
 
 ### Phase 1 — Ciel étoilé, rayons droits

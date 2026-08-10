@@ -2,8 +2,8 @@
 /*   Space_Simulator — input.h                                                */
 /* ************************************************************************** */
 
-#ifndef INPUT_H
-# define INPUT_H
+#ifndef EVENT_H
+# define EVENT_H
 
 /* ——— Lib Extern ——————————————————————————————————————————————————————————— */
 #include <stdbool.h>
@@ -55,5 +55,10 @@ typedef enum e_key
 	LESS = 86,
 }	t_key;
 
+/* ——— Variable prototypes —————————————————————————————————————————————————— */
+typedef struct s_data		t_data;
+
+/* ——— Function prototypes —————————————————————————————————————————————————— */
+bool	lisen_poll_event(t_data *d);
 
 #endif

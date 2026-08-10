@@ -11,7 +11,7 @@
 
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
-#include "includes/input.h"
+#include "includes/events.h"
 #include "../library/libft/libft.h"
 
 /* ——— Lib Graphique ———————————————————————————————————————————————————————— */
@@ -33,6 +33,8 @@ typedef struct s_input	t_input;
 typedef struct s_data
 {
 	SDL_Window		*win;
+	int				win_h;
+	int				win_w;
 	SDL_GLContext	ctx;
 	GLuint			img;
 	GLuint			fbo;
@@ -45,5 +47,7 @@ typedef struct s_data
 /* ——— Function prototypes —————————————————————————————————————————————————— */
 // Fonctions d'initialisation
 t_data	init_program(void);
+void	init_image(t_data *d);
+void	init_resize_image(t_data *d, int new_w, int new_h);
 
 #endif
