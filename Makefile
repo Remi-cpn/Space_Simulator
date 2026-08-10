@@ -28,7 +28,8 @@ SUB_DIRS 	:= exit init debug shaders events
 
 # ——— Sources ———————————————————————————————————————————————————————————————— #
 SRC_INIT	= init_program.c \
-			  init_image.c
+			  init_image.c \
+			  init_texture.c
 
 SRC_EXIT	= exit_program.c
 
