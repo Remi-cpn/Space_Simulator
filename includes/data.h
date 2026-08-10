@@ -22,6 +22,7 @@
 /* ——— Define ——————————————————————————————————————————————————————————————— */
 #define WIN_W 1280
 #define WIN_H 720
+#define WIN_ID 0
 
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
@@ -35,6 +36,7 @@ typedef struct s_data
 	SDL_GLContext	ctx;
 	GLuint			img;
 	GLuint			fbo;
+	GLuint			program;
 	t_input			input;
 	int				cam_target;
 }	t_data;

@@ -5,6 +5,7 @@
 #include "includes/data.h"
 #include "includes/exit.h"
 #include "includes/debug.h"
+#include "includes/shader.h"
 
 static void	init_image(t_data *d)
 {
@@ -13,7 +14,6 @@ static void	init_image(t_data *d)
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, WIN_W, WIN_H);
 
 	// Rend la texture accessible dans le shader
-	// 0 est l'emplacement
 	glBindImageTexture(0, d->img, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
 	// Framebuffer Object
@@ -82,6 +82,9 @@ t_data	init_program(void)
 	glDebugMessageCallback(gl_debug_callback, NULL);
 
 	init_image(&d);
+
+	// Creation du shader
+	d.program = create_compute_shader(&d, "srcs/shaders/shader.comp");
 
 	d.input = init_input();
 	d.cam_target = -1;
