@@ -7,25 +7,6 @@
 #include "includes/debug.h"
 #include "includes/shader.h"
 
-static void	init_image(t_data *d)
-{
-	glGenTextures(1, &(d->img));
-	glBindTexture(GL_TEXTURE_2D, d->img);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, WIN_W, WIN_H);
-
-	// Rend la texture accessible dans le shader
-	glBindImageTexture(0, d->img, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
-	// Framebuffer Object
-	// Rend cette texture éligible comme source de blit.
-	glGenFramebuffers(1, &(d->fbo));
-	glBindFramebuffer(GL_FRAMEBUFFER, d->fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d->img, 0);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		exit_prog(d, ERROR_FBO_INIT, ERROR_FBO_INIT_MSG);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 static t_input	init_input(void)
 {
 	t_input	i;
@@ -55,7 +36,7 @@ static void	init_SDL(t_data *d)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
 	// Initialisation de la fenêtre
-	d->win = SDL_CreateWindow("Space_Simulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
+	d->win = SDL_CreateWindow("Space_Simulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, d->win_w, d->win_h, SDL_WINDOW_OPENGL);
 	if (!d->win)
 		exit_prog(d, ERROR_SDL_WINDOW, SDL_GetError());
 
@@ -70,7 +51,8 @@ t_data	init_program(void)
 	t_data	d;
 
 	ft_memset(&d, 0, sizeof(t_data));
-
+	d.win_w = WIN_W;
+	d.win_h = WIN_H;
 	init_SDL(&d);
 
 	// Chargement de glad qui donne accès aux fonctions OpenGL modernes
