@@ -9,7 +9,7 @@ NAME 		= Space_Simulator
 CC			= cc
 CFLAGS		= -Wall -Wextra -Werror -g
 LFLAGS		= -lSDL2 -lm -lpthread -lGL -ldl
-INCLUDES	= -I$(INC_DIR) -Iexternal/glad/include
+INCLUDES	= -I$(INC_DIR) -Iexternal/glad/include -Iexternal/stb
 RM			= rm -f
 SETUP 		:= ./scripts/setup.sh
 
