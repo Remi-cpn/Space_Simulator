@@ -2,8 +2,8 @@
 /*   Space_Simulator — exit_program.c                                         */
 /* ************************************************************************** */
 
-#include "includes/exit.h"
-#include "../includes/debug.h"
+#include "../../includes/exit.h"
+#include "../../includes/debug.h"
 
 void	exit_prog(t_data *d, int exit_code, const char *error_message)
 {
