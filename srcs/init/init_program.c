@@ -68,6 +68,9 @@ t_data	init_program(void)
 	// Creation du shader
 	d.program = create_compute_shader(&d, "srcs/shaders/shader.comp");
 
+	// Initialisation de la structure simulation
+	d.sim = init_sim();
+
 	d.input = init_input();
 	return (d);
 }

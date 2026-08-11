@@ -10,19 +10,21 @@
 /* ——— Lib Extern ——————————————————————————————————————————————————————————— */
 
 
-/* ——— Lib Intern ——————————————————————————————————————————————————————————— */
-#include "events/events.h"
-#include "../library/libft/libft.h"
-
 /* ——— Lib Graphique ———————————————————————————————————————————————————————— */
-#include "../external/glad/include/glad/gl.h"
-#include <SDL2/SDL.h>
+# include "../external/glad/include/glad/gl.h"
+# include <SDL2/SDL.h>
+
+
+/* ——— Lib Intern ——————————————————————————————————————————————————————————— */
+# include "events/events.h"
+# include "../library/libft/libft.h"
+# include "simulation.h"
 
 
 /* ——— Define ——————————————————————————————————————————————————————————————— */
-#define WIN_W 1280
-#define WIN_H 720
-#define WIN_ID 0
+# define WIN_W 1280
+# define WIN_H 720
+# define WIN_ID 0
 
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
@@ -56,14 +58,17 @@ typedef struct s_data
 		int				tex_capacity;
 
 	t_input			input;
+
+	t_simulation		sim;
 }	t_data;
 
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */
 // Fonctions d'initialisation
-t_data	init_program(void);
-void	init_image(t_data *d);
-void	init_resize_image(t_data *d, int new_w, int new_h);
-GLuint	load_texture(t_data *d, char *path);
+t_data			init_program(void);
+t_simulation	init_sim(void);
+void			init_image(t_data *d);
+void			init_resize_image(t_data *d, int new_w, int new_h);
+GLuint			load_texture(t_data *d, char *path);
 
 #endif

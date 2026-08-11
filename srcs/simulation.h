@@ -1,5 +1,5 @@
 /* ************************************************************************** */
-/*   Space_Simulator — data.h                                                 */
+/*   Space_Simulator — simulation.h                                           */
 /* ************************************************************************** */
 
 #ifndef SIMULATION_H
@@ -7,12 +7,12 @@
 
 
 /* ——— Lib Extern ——————————————————————————————————————————————————————————— */
+# include "../external/glad/include/glad/gl.h"
 
 
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
 # include "../library/librt/librt.h"
-# include "data.h"
 
 
 
@@ -58,14 +58,14 @@ typedef struct s_object
 }	t_object;
 
 /* ——— World ———————————————————————————————————————————————————————————————— */
-typedef struct	s_world
+typedef struct	s_simulation
 {
 	t_camera	cam;
 	t_object	*objs;
 	t_skybox	sky;
 	int			nb_obj;
 
-}	t_world;
+}	t_simulation;
 
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */

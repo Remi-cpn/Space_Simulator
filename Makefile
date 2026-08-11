@@ -25,13 +25,14 @@ LIB			= $(LIBFT_A) $(LIBRT_A)
 
 
 # ——— Sous-dossiers sources —————————————————————————————————————————————————— #
-SUB_DIRS 	:= exit init debug shaders events
+SUB_DIRS 	:= exit init debug shaders events parsing
 
 
 # ——— Sources ———————————————————————————————————————————————————————————————— #
 SRC_INIT	= init_program.c \
 			  init_image.c \
-			  init_texture.c
+			  init_texture.c \
+			  init_simulation.c
 
 SRC_EXIT	= exit_program.c
 
@@ -41,11 +42,13 @@ SRC_SHADER	= shader.c
 
 SRC_EVENTS	= poll_events.c
 
+SRC_PARSING	= parsing.c
+
 
 VPATH 		:= $(SRC_DIR) \
          		$(addprefix $(SRC_DIR)/, $(SUB_DIRS))
 
-SRCS		= srcs/main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS)
+SRCS		= srcs/main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS) $(SRC_PARSING)
 
 OBJ			= ${SRCS:%.c=$(OBJ_DIR)/%.o}
 

@@ -5,6 +5,7 @@
 #include "data.h"
 #include "exit/exit.h"
 #include "events/events.h"
+#include "parsing/parsing.h"
 
 int	main(int ac, char **av)
 {
@@ -14,7 +15,7 @@ int	main(int ac, char **av)
 		return (1);
 
 	d = init_program();
-
+	parsing(&d, NULL);
 	(void)av;
 
 	bool	running;
@@ -25,6 +26,13 @@ int	main(int ac, char **av)
 
 		// Creation de l'image
 		glUseProgram(d.program);
+
+		// Blinde ce qui est necessaire a chaque fram
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, d.sim.sky.tex);
+		glUniform1i(glGetUniformLocation(d.program, "skybox"), 0);
+
+
 		// Dispatch un peu comme du multi threading
 		glDispatchCompute(d.win_w/16, d.win_h/16, 1);
 		// Control que la generation de l'image est finit
