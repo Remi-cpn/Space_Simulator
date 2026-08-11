@@ -42,7 +42,8 @@ SRC_SHADER	= shader.c
 
 SRC_EVENTS	= poll_events.c
 
-SRC_PARSING	= parsing.c
+SRC_PARSING	= parsing.c \
+			  format/format_unique.c
 
 
 VPATH 		:= $(SRC_DIR) \

@@ -30,7 +30,15 @@ typedef enum e_obj
 
 typedef struct s_camera
 {
-	int		cam_target;
+	t_point		origin;
+	t_point		corner;
+	t_vec		hor;
+	t_vec		hor_n;
+	t_vec		ver;
+	t_vec		ver_n;
+	t_vec		dir;
+	double		fov;
+	double		focal;
 }	t_camera;
 
 typedef struct	s_sphere
@@ -64,11 +72,11 @@ typedef struct	s_simulation
 	t_object	*objs;
 	t_skybox	sky;
 	int			nb_obj;
-
 }	t_simulation;
 
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */
+void	calcul_viewport(t_camera *cam, double ratio);
 
 
 #endif

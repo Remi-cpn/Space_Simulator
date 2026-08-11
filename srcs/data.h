@@ -59,14 +59,14 @@ typedef struct s_data
 
 	t_input			input;
 
-	t_simulation		sim;
+	t_simulation	sim;
+	int				cam_target;
 }	t_data;
 
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */
 // Fonctions d'initialisation
 t_data			init_program(void);
-t_simulation	init_sim(void);
 void			init_image(t_data *d);
 void			init_resize_image(t_data *d, int new_w, int new_h);
 GLuint			load_texture(t_data *d, char *path);
