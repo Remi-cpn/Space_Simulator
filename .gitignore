@@ -2,3 +2,5 @@
 /obj/
 library/libft/*.o
 library/libft/libft.a
+library/librt/*.o
+library/librt/librt.a

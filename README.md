@@ -74,9 +74,9 @@ paramètres) qui alimentent le shader à chaque frame.
 ### Phase 1 — Ciel étoilé, rayons droits
 > Objectif : reconstruire l'« univers témoin » du RT, dans le shader.
 
-- [ ] Texture panoramique équirectangulaire.
-- [ ] Caméra en uniforms : position, orientation, FOV — mêmes maths que le RT.
-- [ ] Par pixel : direction du rayon → (longitude, latitude) → échantillonnage.
+- [x] Texture panoramique équirectangulaire.
+- [x] Caméra en uniforms : position, orientation, FOV — mêmes maths que le RT.
+- [x] Par pixel : direction du rayon → (longitude, latitude) → échantillonnage.
 - [ ] Contrôles caméra basiques (souris = orientation).
 
 **Validation :** ciel identique au fond du RT, navigation fluide.

@@ -10,7 +10,7 @@ void	exit_prog(t_data *d, int exit_code, const char *error_message)
 	int	i;
 
 	if (error_message)
-		print_error(error_message);
+		ft_print_error((char *)error_message);
 	if (d->ctx)
 		SDL_GL_DeleteContext(d->ctx);
 	if (d->win)

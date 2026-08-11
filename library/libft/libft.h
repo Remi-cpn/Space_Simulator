@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcompain <rcompain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rcompain <rcompain@student.42angouleme.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/14 14:51:16 by rcompain          #+#    #+#             */
-/*   Updated: 2026/04/13 12:12:00 by rcompain         ###   ########.fr       */
+/*   Updated: 2026/08/11 10:43:03 by rcompain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ void		ft_lstclear(t_list **lst, void (*del)(void *));
 void		ft_lstiter(t_list *lst, void (*f)(void *));
 t_list		*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *));
 
-/* -------------------------- FONCTIONS PRINTF ----------------------------- */
+/* -------------------------- FONCTIONS PRINT ------------------------------ */
 
 int			ft_printf(const char *str, ...);
 int			ft_putstr(char *s);
@@ -112,6 +112,8 @@ int			ft_putnbrbase(int nbr, char *base);
 int			ft_putchar(char c);
 int			ft_putadrbase(uintptr_t nbr);
 int			ft_putnbr(long int nbr);
+
+void		ft_print_error(char *message);
 
 /* -------------------------- FONCTIONS GET_NEXT_LINE ---------------------- */
 char		*ft_get_next_line(int fd);
