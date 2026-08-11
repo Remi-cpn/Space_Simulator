@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   librt.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcompain <rcompain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rcompain <rcompain@student.42angouleme.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:07:20 by rcompain          #+#    #+#             */
-/*   Updated: 2026/05/05 16:28:47 by rcompain         ###   ########.fr       */
+/*   Updated: 2026/08/11 10:42:17 by rcompain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,5 @@ int		double_valid(char *s);
 
 bool	check_idx_string_tab(char **s, int idx);
 bool	check_extention(char *str, char *key);
-
-void	print_error(char *message);
 
 #endif

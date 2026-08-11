@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: rcompain <rcompain@student.42.fr>          +#+  +:+       +#+         #
+#    By: rcompain <rcompain@student.42angouleme.    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/14 17:34:44 by rcompain          #+#    #+#              #
-#    Updated: 2026/04/13 11:44:34 by rcompain         ###   ########.fr        #
+#    Updated: 2026/08/11 10:43:52 by rcompain         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -91,6 +91,7 @@ SRC_PTF =	ft_printf.c \
 			ft_putchar.c \
 			ft_putadrbase.c \
 			ft_putnbr.c \
+			ft_print_error.c
 
 SOURCES = $(SRC) $(SRC_PUT) $(SRC_MEM) $(SRC_LST) $(SRC_PTF)
 

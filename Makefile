@@ -35,8 +35,7 @@ SRC_INIT	= init_program.c \
 
 SRC_EXIT	= exit_program.c
 
-SRC_DEBUG	= debug.c \
-			  gl_debug.c
+SRC_DEBUG	= gl_debug.c
 
 SRC_SHADER	= shader.c
 

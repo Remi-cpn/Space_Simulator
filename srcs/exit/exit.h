@@ -6,11 +6,12 @@
 # define EXIT_H
 
 /* ——— Lib Extern ——————————————————————————————————————————————————————————— */
-#include <unistd.h>
+# include <unistd.h>
 
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
-#include "../data.h"
+# include "../data.h"
+# include "../../library/libft/libft.h"
 
 /* ——— Define exit messages (negative values is personal error codes) ——————— */
 // Exit codes

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: rcompain <rcompain@student.42.fr>          +#+  +:+       +#+         #
+#    By: rcompain <rcompain@student.42angouleme.    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/14 17:34:44 by rcompain          #+#    #+#              #
-#    Updated: 2026/05/05 16:29:03 by rcompain         ###   ########.fr        #
+#    Updated: 2026/08/11 10:42:26 by rcompain         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,7 +32,6 @@ SRC_PAR =	parsing/double_valid.c \
 			parsing/float_valid.c \
 			parsing/int_valid.c \
 			parsing/long_valid.c \
-			parsing/print_error.c \
 			parsing/check_extention.c \
 			parsing/check_idx_string.c
 

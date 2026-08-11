@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   print_error.c                                      :+:      :+:    :+:   */
+/*   ft_print_error.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcompain <rcompain@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rcompain <rcompain@student.42angouleme.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 11:35:09 by rcompain          #+#    #+#             */
-/*   Updated: 2026/05/05 16:42:29 by rcompain         ###   ########.fr       */
+/*   Updated: 2026/08/11 10:44:25 by rcompain         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../librt.h"
+#include "libft.h"
 
-void	print_error(char *message)
+void	ft_print_error(char *message)
 {
 	ft_putstr_fd("Error\n", 2);
 	ft_putstr_fd(message, 2);
