@@ -18,8 +18,10 @@ SETUP 		:= ./scripts/setup.sh
 SRC_DIR		= srcs
 OBJ_DIR		= obj
 LIBFT_DIR	= library/libft
-
+LIBRT_DIR	= library/librt
 LIBFT_A		= $(LIBFT_DIR)/libft.a
+LIBRT_A		= $(LIBRT_DIR)/librt.a
+LIB			= $(LIBFT_A) $(LIBRT_A)
 
 
 # ——— Sous-dossiers sources —————————————————————————————————————————————————— #
@@ -63,10 +65,10 @@ RED         = \033[38;5;210m
 
 
 # ——— Rules ————————————————————————————————————————————————————————————————— #
-all: $(LIBFT_A) $(NAME)
+all: $(LIB) $(NAME)
 
 $(NAME): check-deps $(OBJ)
-	@$(CC) $(CFLAGS) $(INCLUDES) $(OBJ) -o $(NAME) $(LIBFT_A) $(LFLAGS)
+	@$(CC) $(CFLAGS) $(INCLUDES) $(OBJ) -o $(NAME) $(LIB) $(LFLAGS)
 	@printf "\r\033[2K$(CYAN)📝 Sources     $(BOLD)$(GREEN)[OK]$(R)\n"
 	@printf "$(BOLD)$(GREEN)\n    ✅  Space_Simulator compiled successfully\n\n$(R)"
 
@@ -79,6 +81,10 @@ $(LIBFT_A):
 	@make -s -C $(LIBFT_DIR)
 	@printf "\r\033[2K$(CYAN)📚 Libft       $(BOLD)$(GREEN)[OK]$(R)\n"
 
+$(LIBRT_A):
+	@make -s -C $(LIBRT_DIR)
+	@printf "\r\033[2K$(CYAN)🪐 Librt       $(BOLD)$(GREEN)[OK]$(R)\n"
+
 check-deps:
 	@command -v sdl2-config >/dev/null 2>&1 || { \
 		printf "Missing SDL2 — launch $(SETUP) ? [y/N] "; \
@@ -89,11 +95,13 @@ check-deps:
 
 clean:
 	@make clean -s -C $(LIBFT_DIR)
+	@make clean -s -C $(LIBRT_DIR)
 	@$(RM) -r $(OBJ_DIR)
 	@printf "$(CYAN)🗑  Object files removed$(R)\n"
 
 fclean: clean
 	@make fclean -s -C $(LIBFT_DIR)
+	@make fclean -s -C $(LIBRT_DIR)
 	@$(RM) $(NAME)
 	@printf "$(CYAN)🗑  Executable removed$(R)\n"
 

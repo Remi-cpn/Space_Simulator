@@ -56,7 +56,6 @@ typedef struct s_data
 		int				tex_capacity;
 
 	t_input			input;
-	int				cam_target;
 }	t_data;
 
 

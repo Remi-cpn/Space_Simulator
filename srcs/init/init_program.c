@@ -69,6 +69,5 @@ t_data	init_program(void)
 	d.program = create_compute_shader(&d, "srcs/shaders/shader.comp");
 
 	d.input = init_input();
-	d.cam_target = -1;
 	return (d);
 }
