@@ -77,11 +77,11 @@ paramètres) qui alimentent le shader à chaque frame.
 - [x] Texture panoramique équirectangulaire.
 - [x] Caméra en uniforms : position, orientation, FOV — mêmes maths que le RT.
 - [x] Par pixel : direction du rayon → (longitude, latitude) → échantillonnage.
-- [ ] Contrôles caméra basiques (souris = orientation).
+- [x] Contrôles caméra basiques.
 
 **Validation :** ciel identique au fond du RT, navigation fluide.
 
-### Phase 2 — Théorie (papier, pas de code)
+### Phase 2 — Théorie
 > Objectif : comprendre chaque terme avant de l'intégrer.
 
 - [ ] Métrique de Schwarzschild, rayon `rs = 2GM/c²`, unités du simulateur
@@ -189,6 +189,21 @@ animation fluide temps réel.
   petit objet proche.
 - **Performance :** si le temps réel décroche, réduire la résolution interne
   et upscaler avant de toucher au pas d'intégration.
+
+## Dette technique — à retravailler plus tard
+
+Compromis acceptés consciemment pour avancer, à revisiter quand le besoin
+deviendra bloquant (pas des bugs à corriger dans l'immédiat).
+
+- **Caméra libre — dérive de roulis vs boucle complète verticale :**
+  `calcul_viewport` reconstruit `hor_n` à partir de sa propre valeur
+  précédente plutôt que de se recaler sur `up` — choix délibéré pour
+  permettre une boucle complète (regarder droit vers le haut et continuer)
+  sans singularité de type gimbal lock. Coût : une légère dérive de roulis
+  s'accumule sur des rotations combinées prolongées (haut/bas + gauche/droite
+  enchaînés). Vraie solution : orientation par quaternion (ni dérive, ni
+  singularité aux pôles) — demande d'ajouter la multiplication de quaternions
+  et la rotation d'un vecteur par quaternion à la `librt`, pas encore fait.
 
 ## Références à consulter
 
