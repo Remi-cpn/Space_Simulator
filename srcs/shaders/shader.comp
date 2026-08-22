@@ -2,11 +2,53 @@
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(binding = 0, rgba8) uniform image2D outImg;
 uniform sampler2D skybox;
-uniform vec3 cam_origin;
-uniform vec3 cam_corner;
-uniform vec3 cam_hor;
-uniform vec3 cam_ver;
 
+//Camera
+uniform vec3 	cam_origin;
+uniform vec3 	cam_corner;
+uniform vec3 	cam_hor;
+uniform vec3 	cam_ver;
+
+// Black Hole
+uniform float	bh_mass;
+uniform vec3	bh_pos;	// position du trou noir
+uniform int		steps;	// nombre de pas RK4
+uniform float	step_size;	// h
+
+/* ——— Calcul de la trajectoire d'un photon —————————————————————————————————————————————————————————— */
+
+// L'équation de Binet
+vec2 orbit_derivative(vec2 state, float M)
+{
+    float u = state.x;
+    float v = state.y;
+    return vec2(v, 3.0 * M * u * u - u); // dv/dφ = 3Mu² - u
+}
+
+// Calcul de RK4
+vec2 rk4_step(vec2 state, float M, float h)
+{
+    vec2 k1 = orbit_derivative(state, M);
+	vec2 k2 = orbit_derivative(state + 0.5 * h * k1, M);
+	vec2 k3 = orbit_derivative(state + 0.5 * h * k2, M);
+	vec2 k4 = orbit_derivative(state + h * k3, M);
+	return (state + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4));
+}
+
+void photon_trajectory(vec3 dir)
+{
+	vec3 P = cam_origin - bh_pos;
+	float r0 = length(P);
+	vec3 e1 = normalize(P);
+	vec3 n = normalize(cross(P, dir));
+	vec3 e2 = cross(n, e1);
+	float b = length(cross(P, dir));
+	float u0 = 1.0 / r0;
+}
+
+
+
+/* ——— Main —————————————————————————————————————————————————————————— */
 
 void main()
 {
@@ -22,6 +64,13 @@ void main()
 	float lat = asin(dir.y);           // [-pi/2, pi/2], Y = axe vertical (cohérent avec ton "up" dans calcul_viewport)
 	vec2 sky_uv = vec2(lon / (2.0 * 3.14159265) + 0.5, lat / 3.14159265 + 0.5);
 	vec4 color = texture(skybox, sky_uv);
+
+
+	photon_trajectory(dir);
+
+
+
+
 
 
 

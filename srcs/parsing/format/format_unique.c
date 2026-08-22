@@ -4,6 +4,13 @@
 
 #include "../parsing.h"
 
+// Modifier car pas vraiment de parsing encore
+void	add_bh(t_simulation *s, char **line_split)
+{
+	(void)line_split;
+	s->bh.mass = 1;
+	s->bh.pos = (t_vec){0, 0, 0};
+}
 
 // Modifier car pas vraiment de parsing encore
 void	add_cam(t_simulation *s, char **line_split)
@@ -16,7 +23,7 @@ void	add_cam(t_simulation *s, char **line_split)
 	// {
 		// if (!double_valid(line_split[3]))
 		// 	exit_prog_pars(p, ERROR_FILE_CAM, ERROR_FILE_CAM_ARGS_MSG);
-		s->cam.origin = (t_vec){0, 0, 0};
+		s->cam.origin = (t_vec){0, 0, -20};
 		s->cam.dir = (t_vec){0, 0, 1};
 		// if (s->cam.dir.x == 0.0 && s->cam.dir.y == 0.0
 		// 	&& s->cam.dir.z == 0.0)

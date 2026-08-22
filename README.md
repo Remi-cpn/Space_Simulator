@@ -174,8 +174,8 @@ L'équation de Binet relativiste pour l'orbite d'un photon
       (poser `G = c = 1`, distances en multiples de `rs`).
 - [x] Équation d'orbite d'un photon (forme de Binet relativiste) :
       trajectoire 2D `u(φ)` avec `u = 1/r` dans le plan du rayon.
-- [ ] Construction du plan de chaque rayon + passage 3D → 2D → 3D.
-- [ ] Conditions initiales : paramètre d'impact `b`, direction de départ.
+- [x] Construction du plan de chaque rayon + passage 3D → 2D → 3D.
+- [x] Conditions initiales : paramètre d'impact `b`, direction de départ.
 
 **Validation :** savoir expliquer l'équation terme par terme, et prédire :
 sphère de photons à `1.5 rs`, capture si `b < b_crit ≈ 2.6 rs`.
