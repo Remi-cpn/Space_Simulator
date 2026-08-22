@@ -15,6 +15,18 @@ uniform vec3	bh_pos;	// position du trou noir
 uniform int		steps;	// nombre de pas RK4
 uniform float	step_size;	// h
 
+
+/* ——— choix du pixel sur le skybox —————————————————————————————————————————————————————————— */
+
+vec4 sample_skybox(vec3 direction)
+{
+	float lon = atan(direction.z, direction.x);
+	float lat = asin(direction.y);
+	vec2 sky_uv = vec2(lon / (2.0 * 3.14159265) + 0.5, lat / 3.14159265 + 0.5);
+	return texture(skybox, sky_uv);
+}
+
+
 /* ——— Calcul de la trajectoire d'un photon —————————————————————————————————————————————————————————— */
 
 // L'équation de Binet
@@ -35,7 +47,7 @@ vec2 rk4_step(vec2 state, float M, float h)
 	return (state + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4));
 }
 
-void photon_trajectory(vec3 dir)
+vec4 photon_trajectory(vec3 dir)
 {
 	vec3 P = cam_origin - bh_pos;
 	float r0 = length(P);
@@ -44,6 +56,39 @@ void photon_trajectory(vec3 dir)
 	vec3 e2 = cross(n, e1);
 	float b = length(cross(P, dir));
 	float u0 = 1.0 / r0;
+
+	// (du/dφ)² = 1/b² - u² + 2Mu³
+	float du0_sq = 1.0/(b*b) - u0*u0 + 2.0*bh_mass*u0*u0*u0;
+	float du0 = sqrt(max(du0_sq, 0.0)) * -sign(dot(dir, e1));
+
+	vec2 state = vec2(u0, du0);
+	float phi = 0.0;
+	float rs = 2.0 * bh_mass;
+
+	// distance d'affichage en dur !!
+	float r_max = 500.0 * rs;
+
+	for (int i = 0; i < steps; i++)
+	{
+		state = rk4_step(state, bh_mass, step_size);
+		phi += step_size;
+
+		float r = 1.0 / state.x;
+
+		if (r < rs)
+		{
+			// Horizon franchi -> noir
+			return vec4 (0, 0, 0, 1);
+		}
+		if (r > r_max)
+		{
+			// Évasion -> reconstruire la direction finale, échantillonner le skybox
+			vec3 final_dir = normalize(cos(phi) * e1 + sin(phi) * e2);
+			return sample_skybox(final_dir);
+		}
+	}
+	// Si on arrive ici sans être sorti : budget de pas épuisé
+	return vec4 (0, 0, 0, 1);
 }
 
 
@@ -60,18 +105,7 @@ void main()
 
 	vec2 uv = vec2(pixel) / vec2(size);
 	vec3 dir = normalize(cam_corner + uv.x * cam_hor + uv.y * cam_ver - cam_origin);
-	float lon = atan(dir.z, dir.x);   // atan(y, x) en GLSL = atan2 en C, résultat en [-pi, pi]
-	float lat = asin(dir.y);           // [-pi/2, pi/2], Y = axe vertical (cohérent avec ton "up" dans calcul_viewport)
-	vec2 sky_uv = vec2(lon / (2.0 * 3.14159265) + 0.5, lat / 3.14159265 + 0.5);
-	vec4 color = texture(skybox, sky_uv);
-
-
-	photon_trajectory(dir);
-
-
-
-
-
+	vec4 color = photon_trajectory(dir);
 
 
 	imageStore(outImg, pixel, color);
