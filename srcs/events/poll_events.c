@@ -19,6 +19,9 @@ static bool	set_input(t_input *input, int scancode, bool value)
 		case LEFT : input->left = value; break;
 		case RIGHT : input->right = value; break;
 
+		case LCTRL : input->ctrl = value; break;
+		case SPACE : input->space = value; break;
+
 		case ESC : return false;
 
 		default : break;

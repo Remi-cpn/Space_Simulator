@@ -25,7 +25,7 @@ LIB			= $(LIBFT_A) $(LIBRT_A)
 
 
 # ——— Sous-dossiers sources —————————————————————————————————————————————————— #
-SUB_DIRS 	:= exit init debug shaders events parsing
+SUB_DIRS 	:= exit init debug shaders events parsing moves
 
 
 # ——— Sources ———————————————————————————————————————————————————————————————— #
@@ -45,11 +45,12 @@ SRC_EVENTS	= poll_events.c
 SRC_PARSING	= parsing.c \
 			  format/format_unique.c
 
+SRC_MOVES	= camera.c
 
 VPATH 		:= $(SRC_DIR) \
          		$(addprefix $(SRC_DIR)/, $(SUB_DIRS))
 
-SRCS		= srcs/main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS) $(SRC_PARSING)
+SRCS		= srcs/main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS) $(SRC_PARSING) $(SRC_MOVES)
 
 OBJ			= ${SRCS:%.c=$(OBJ_DIR)/%.o}
 

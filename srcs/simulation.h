@@ -15,6 +15,9 @@
 # include "../library/librt/librt.h"
 
 
+/* ——— Variable prototypes —————————————————————————————————————————————————— */
+typedef struct s_data		t_data;
+
 
 /* ——— Objects —————————————————————————————————————————————————————————————— */
 typedef enum e_obj
@@ -77,6 +80,7 @@ typedef struct	s_simulation
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */
 void	calcul_viewport(t_camera *cam, double ratio);
+void	update_cam(t_data *d, double speed, double speed_rot);
 
 
 #endif

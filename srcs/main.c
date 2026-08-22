@@ -41,9 +41,7 @@ static void	update(t_data *d)
 		glBlitFramebuffer(0, 0, d->win_w, d->win_h, 0, 0, d->win_w, d->win_h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 
-		// update_cam(d, 0.6, 0.1);
-
-
+		update_cam(d, 0.6, 0.1);
 
 
 		// Envoi l'image sur l'ecran
