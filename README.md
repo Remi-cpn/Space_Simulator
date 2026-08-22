@@ -58,6 +58,92 @@ géodésique, et écrit une couleur. L'image est ensuite présentée à l'écran
 n'est que l'orchestrateur : fenêtre, événements, et envoi des uniforms (caméra, masse,
 paramètres) qui alimentent le shader à chaque frame.
 
+---
+
+## Théorie
+
+### Schwarzschild
+
+`rs = 2GM/c²`
+Toute masse a un rayon de Schwarzschild. C'est le rayon en dessous duquel il faudrait
+comprimer une masse donnée pour qu'elle devienne un trou noir.
+La Terre a un `rs` d'environ 9 mm, le Soleil environ 3 km.
+
+### Équation d'orbite d'un photon
+
+En choisissant des unités de longueur/masse/temps adaptées (unités géométrisées),
+on peut poser `G = 1` et `c = 1` — pas parce que ces constantes valent réellement 1,
+mais parce que leur valeur numérique dépend entièrement du système d'unités choisi.
+Ce choix les élimine de toutes les équations : `rs = 2GM/c²` devient `rs = 2M`.
+
+Se restreindre au plan du rayon:
+> On part de l'équation de l'intervalle spatio-temporel:
+>`ds² = -(1 - rs/r) dt² + dr²/(1 - rs/r) + r²(dθ² + sin²θ dφ²)`
+>- `-(1 - rs/r) dt²` — dilatation du temps
+>- `dr²/(1 - rs/r)` — contraction radiale
+>- `r² dθ²` — partie angulaire polaire
+>- `r² sin²θ dφ²` — partie angulaire azimutale
+>
+> Grâce à la symétrie sphérique, le moment angulaire est conservé → la trajectoire
+> reste dans un plan fixe. L'axe polaire des coordonnées sphériques étant un choix
+> arbitraire, on l'oriente perpendiculairement à ce plan : il coïncide alors avec
+> l'équateur, `θ = π/2`.
+> `dθ = 0` vu que `θ` ne change jamais le long du trajet, sa dérivée est nulle.
+> On obtient donc après simplification : `ds² = -(1 - 2M/r) dt² + dr²/(1 - 2M/r) + r² dφ²`
+
+Condition de photon:
+> La lumière suit une géodésique nulle : `ds² = 0` tout le long de sa trajectoire
+> (contrairement à une particule massive, où `ds²` mesure le temps propre).
+
+> Un photon n'ayant pas de temps propre (`ds` est toujours nul pour lui), on
+> paramètre sa trajectoire par un paramètre affine `λ` quelconque. La règle de la
+> chaîne donne :
+`dt = ṫ dλ`, `dr = ṙ dλ`, `dφ = φ̇ dλ`.
+
+> En replaçant ça dans l'équation :
+> `ds² = -(1-2M/r)(ṫ dλ)² + (ṙ dλ)²/(1-2M/r) + r²(φ̇ dλ)²`
+
+>Chaque terme a un `dλ²` en facteur commun — on peut le sortir :
+>`ds² = [ -(1-2M/r)ṫ² + ṙ²/(1-2M/r) + r²φ̇² ] × dλ²`
+
+> Et comme `ds² = 0` (condition de photon) et que `dλ² ≠ 0` on a :
+`-(1-2M/r)ṫ² + ṙ²/(1-2M/r) + r²φ̇² = 0`
+
+Quantités conservées:
+
+> Selon Euler-Lagrange, si une variable n'apparaît que par sa dérivée (jamais
+> elle-même) dans l'expression ci-dessus, la quantité associée à cette dérivée
+> reste constante le long du trajet. Ni `t` ni `φ` n'apparaissent explicitement
+> (seulement `ṫ` et `φ̇`) → deux quantités conservées :
+
+> L'énergie du photon : `E = (1-2M/r) ṫ`
+
+> Son moment angulaire : `L = r² φ̇`
+
+> Après substitution dans notre équation on a : `-E²/(1-2M/r) + ṙ²/(1-2M/r) + L²/r² = 0` — on a donc éliminé `ṫ`.
+
+> On simplifie : `-E² + ṙ² + (1-2M/r) × L²/r² = 0`
+
+> On isole : `ṙ² = E² - (1-2M/r) × L²/r²`
+
+L'équation de Binet relativiste pour l'orbite d'un photon
+
+> On a `ṙ = dr/dλ` et `φ̇ = dφ/dλ`. Diviser l'un par l'autre élimine `λ` : `dr/dφ = ṙ/φ̇`
+
+> Et on connaît `φ̇ = L/r²` donc : `ṙ = φ̇ × (dr/dφ) = (L/r²) × (dr/dφ)`
+
+> On obtient : `(L/r²)² × (dr/dφ)² = E² - (1-2M/r)L²/r²`
+
+> On isole `(dr/dφ)²` : `(dr/dφ)² = (E²/L²)r⁴ - (1-2M/r)r²`
+
+> On pose `u = 1/r` (donc `r = 1/u` et `dr/dφ = -(1/u²)(du/dφ)`), on substitue et
+> on simplifie : `(du/dφ)² = E²/L² - u² + 2Mu³`
+
+> On introduit le paramètre d'impact `b = L/E` : `(du/dφ)² = 1/b² - u² + 2Mu³`
+
+> Et après dérivation par rapport à `φ` on obtient : `d²u/dφ² + u = 3Mu²`
+
+
 # Roadmap
 
 ## v1 — Le trou noir (validation du moteur)
@@ -84,9 +170,9 @@ paramètres) qui alimentent le shader à chaque frame.
 ### Phase 2 — Théorie
 > Objectif : comprendre chaque terme avant de l'intégrer.
 
-- [ ] Métrique de Schwarzschild, rayon `rs = 2GM/c²`, unités du simulateur
+- [x] Métrique de Schwarzschild, rayon `rs = 2GM/c²`, unités du simulateur
       (poser `G = c = 1`, distances en multiples de `rs`).
-- [ ] Équation d'orbite d'un photon (forme de Binet relativiste) :
+- [x] Équation d'orbite d'un photon (forme de Binet relativiste) :
       trajectoire 2D `u(φ)` avec `u = 1/r` dans le plan du rayon.
 - [ ] Construction du plan de chaque rayon + passage 3D → 2D → 3D.
 - [ ] Conditions initiales : paramètre d'impact `b`, direction de départ.
