@@ -190,6 +190,21 @@ animation fluide temps réel.
 - **Performance :** si le temps réel décroche, réduire la résolution interne
   et upscaler avant de toucher au pas d'intégration.
 
+## Dette technique — à retravailler plus tard
+
+Compromis acceptés consciemment pour avancer, à revisiter quand le besoin
+deviendra bloquant (pas des bugs à corriger dans l'immédiat).
+
+- **Caméra libre — dérive de roulis vs boucle complète verticale :**
+  `calcul_viewport` reconstruit `hor_n` à partir de sa propre valeur
+  précédente plutôt que de se recaler sur `up` — choix délibéré pour
+  permettre une boucle complète (regarder droit vers le haut et continuer)
+  sans singularité de type gimbal lock. Coût : une légère dérive de roulis
+  s'accumule sur des rotations combinées prolongées (haut/bas + gauche/droite
+  enchaînés). Vraie solution : orientation par quaternion (ni dérive, ni
+  singularité aux pôles) — demande d'ajouter la multiplication de quaternions
+  et la rotation d'un vecteur par quaternion à la `librt`, pas encore fait.
+
 ## Références à consulter
 
 - Textures : NASA SVS *Deep Star Maps* (domaine public) ; textures
