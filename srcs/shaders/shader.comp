@@ -23,57 +23,95 @@ vec4 sample_skybox(vec3 direction)
 	float lon = atan(direction.z, direction.x);
 	float lat = asin(direction.y);
 	vec2 sky_uv = vec2(lon / (2.0 * 3.14159265) + 0.5, lat / 3.14159265 + 0.5);
-	return texture(skybox, sky_uv);
+	return textureLod(skybox, sky_uv, 0.0);
 }
 
 
 /* ——— Calcul de la trajectoire d'un photon —————————————————————————————————————————————————————————— */
+/* Intégration directe en 3D (position + vitesse), pas de réduction 2D/reconstruction —
+   approche "starless" (rantonels/starless), évite toute construction de base (e1/e2)
+   et donc toute singularité de type produit vectoriel proche de zéro. */
 
-// L'équation de Binet
-vec2 orbit_derivative(vec2 state, float M)
+struct t_state
 {
-    float u = state.x;
-    float v = state.y;
-    return vec2(v, 3.0 * M * u * u - u); // dv/dφ = 3Mu² - u
+	vec3	pos;
+	vec3	vel;
+};
+
+t_state add_state(t_state a, t_state b)
+{
+	t_state	r;
+
+	r.pos = a.pos + b.pos;
+	r.vel = a.vel + b.vel;
+	return (r);
+}
+
+t_state scale_state(t_state a, float s)
+{
+	t_state	r;
+
+	r.pos = a.pos * s;
+	r.vel = a.vel * s;
+	return (r);
+}
+
+// F(r) = -3M h² / r⁴ (forme vectorielle de l'équation de Binet)
+t_state orbit_derivative(t_state s, float h2, float M)
+{
+	t_state	d;
+	float	r2;
+
+	d.pos = s.vel;
+	r2 = dot(s.pos, s.pos);
+	d.vel = -3.0 * M * h2 * s.pos / (r2 * r2 * sqrt(r2)); // r^5 = r2² * √r2
+	return (d);
 }
 
 // Calcul de RK4
-vec2 rk4_step(vec2 state, float M, float h)
+t_state rk4_step(t_state s, float h2, float M, float h)
 {
-    vec2 k1 = orbit_derivative(state, M);
-	vec2 k2 = orbit_derivative(state + 0.5 * h * k1, M);
-	vec2 k3 = orbit_derivative(state + 0.5 * h * k2, M);
-	vec2 k4 = orbit_derivative(state + h * k3, M);
-	return (state + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4));
+	t_state	k1;
+	t_state	k2;
+	t_state	k3;
+	t_state	k4;
+	t_state	sum;
+
+	k1 = orbit_derivative(s, h2, M);
+	k2 = orbit_derivative(add_state(s, scale_state(k1, 0.5 * h)), h2, M);
+	k3 = orbit_derivative(add_state(s, scale_state(k2, 0.5 * h)), h2, M);
+	k4 = orbit_derivative(add_state(s, scale_state(k3, h)), h2, M);
+	sum = add_state(add_state(k1, scale_state(k2, 2.0)),
+			add_state(scale_state(k3, 2.0), k4));
+	return (add_state(s, scale_state(sum, h / 6.0)));
 }
 
 vec4 photon_trajectory(vec3 dir)
 {
-	vec3 P = cam_origin - bh_pos;
-	float r0 = length(P);
-	vec3 e1 = normalize(P);
-	vec3 n = normalize(cross(P, dir));
-	vec3 e2 = cross(n, e1);
-	float b = length(cross(P, dir));
-	float u0 = 1.0 / r0;
+	t_state	s;
+	vec3	hvec;
+	float	h2;
+	float	rs;
+	float	r_max;
+	float	r;
 
-	// (du/dφ)² = 1/b² - u² + 2Mu³
-	float du0_sq = 1.0/(b*b) - u0*u0 + 2.0*bh_mass*u0*u0*u0;
-	float du0 = sqrt(max(du0_sq, 0.0)) * -sign(dot(dir, e1));
+	s.pos = cam_origin - bh_pos;
+	s.vel = dir;
 
-	vec2 state = vec2(u0, du0);
-	float phi = 0.0;
-	float rs = 2.0 * bh_mass;
+	hvec = cross(s.pos, s.vel);
+	h2 = dot(hvec, hvec); // moment angulaire² conservé, calculé une seule fois
 
-	// distance d'affichage en dur !!
-	float r_max = 500.0 * rs;
+	rs = 2.0 * bh_mass;
+
+	// distance d'evasion : au moins 50*rs, mais toujours bien au-dela de r0
+	// pour que la camera ne "sorte" jamais elle-meme de la zone simulee
+	r_max = max(50.0 * rs, 5.0 * length(s.pos));
 
 	for (int i = 0; i < steps; i++)
 	{
-		state = rk4_step(state, bh_mass, step_size);
-		phi += step_size;
-
-		float r = 1.0 / state.x;
+		r = length(s.pos);
+		s = rk4_step(s, h2, bh_mass, step_size * clamp(r / rs, 0.1, 20.0));
+		r = length(s.pos);
 
 		if (r < rs)
 		{
@@ -82,9 +120,8 @@ vec4 photon_trajectory(vec3 dir)
 		}
 		if (r > r_max)
 		{
-			// Évasion -> reconstruire la direction finale, échantillonner le skybox
-			vec3 final_dir = normalize(cos(phi) * e1 + sin(phi) * e2);
-			return sample_skybox(final_dir);
+			// Évasion -> échantillonner le skybox avec la vitesse finale
+			return sample_skybox(normalize(s.vel));
 		}
 	}
 	// Si on arrive ici sans être sorti : budget de pas épuisé

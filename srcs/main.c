@@ -31,7 +31,7 @@ static void	update(t_data *d)
 		glUniform1f(glGetUniformLocation(d->program, "bh_mass"), d->sim.bh.mass);
 		glUniform3f(glGetUniformLocation(d->program, "bh_pos"), d->sim.bh.pos.x, d->sim.bh.pos.y, d->sim.bh.pos.z);
 		glUniform1i(glGetUniformLocation(d->program, "steps"), 500);
-		glUniform1f(glGetUniformLocation(d->program, "step_size"), 0.01f);
+		glUniform1f(glGetUniformLocation(d->program, "step_size"), 1.0f);
 
 
 		// Dispatch un peu comme du multi threading

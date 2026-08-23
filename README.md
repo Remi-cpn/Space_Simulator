@@ -13,6 +13,9 @@ l'intégration numérique de trajectoires.
 
 ---
 
+Premier visuel du trou noir
+![alt text](image.png)
+
 ## Principe du moteur
 
 1. La caméra émet un rayon par pixel (comme un raytracer classique).
