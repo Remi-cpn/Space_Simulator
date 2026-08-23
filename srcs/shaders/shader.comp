@@ -2,11 +2,135 @@
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(binding = 0, rgba8) uniform image2D outImg;
 uniform sampler2D skybox;
-uniform vec3 cam_origin;
-uniform vec3 cam_corner;
-uniform vec3 cam_hor;
-uniform vec3 cam_ver;
 
+//Camera
+uniform vec3 	cam_origin;
+uniform vec3 	cam_corner;
+uniform vec3 	cam_hor;
+uniform vec3 	cam_ver;
+
+// Black Hole
+uniform float	bh_mass;
+uniform vec3	bh_pos;	// position du trou noir
+uniform int		steps;	// nombre de pas RK4
+uniform float	step_size;	// h
+
+
+/* ——— choix du pixel sur le skybox —————————————————————————————————————————————————————————— */
+
+vec4 sample_skybox(vec3 direction)
+{
+	float lon = atan(direction.z, direction.x);
+	float lat = asin(direction.y);
+	vec2 sky_uv = vec2(lon / (2.0 * 3.14159265) + 0.5, lat / 3.14159265 + 0.5);
+	return texture(skybox, sky_uv);
+}
+
+
+/* ——— Calcul de la trajectoire d'un photon —————————————————————————————————————————————————————————— */
+/* Intégration directe en 3D (position + vitesse), pas de réduction 2D/reconstruction —
+   approche "starless" (rantonels/starless), évite toute construction de base (e1/e2)
+   et donc toute singularité de type produit vectoriel proche de zéro. */
+
+struct t_state
+{
+	vec3	pos;
+	vec3	vel;
+};
+
+t_state add_state(t_state a, t_state b)
+{
+	t_state	r;
+
+	r.pos = a.pos + b.pos;
+	r.vel = a.vel + b.vel;
+	return (r);
+}
+
+t_state scale_state(t_state a, float s)
+{
+	t_state	r;
+
+	r.pos = a.pos * s;
+	r.vel = a.vel * s;
+	return (r);
+}
+
+// F(r) = -3M h² / r⁴ (forme vectorielle de l'équation de Binet)
+t_state orbit_derivative(t_state s, float h2, float M)
+{
+	t_state	d;
+	float	r2;
+
+	d.pos = s.vel;
+	r2 = dot(s.pos, s.pos);
+	d.vel = -3.0 * M * h2 * s.pos / (r2 * r2 * sqrt(r2)); // r^5 = r2² * √r2
+	return (d);
+}
+
+// Calcul de RK4
+t_state rk4_step(t_state s, float h2, float M, float h)
+{
+	t_state	k1;
+	t_state	k2;
+	t_state	k3;
+	t_state	k4;
+	t_state	sum;
+
+	k1 = orbit_derivative(s, h2, M);
+	k2 = orbit_derivative(add_state(s, scale_state(k1, 0.5 * h)), h2, M);
+	k3 = orbit_derivative(add_state(s, scale_state(k2, 0.5 * h)), h2, M);
+	k4 = orbit_derivative(add_state(s, scale_state(k3, h)), h2, M);
+	sum = add_state(add_state(k1, scale_state(k2, 2.0)),
+			add_state(scale_state(k3, 2.0), k4));
+	return (add_state(s, scale_state(sum, h / 6.0)));
+}
+
+vec4 photon_trajectory(vec3 dir)
+{
+	t_state	s;
+	vec3	hvec;
+	float	h2;
+	float	rs;
+	float	r_max;
+	float	r;
+
+	s.pos = cam_origin - bh_pos;
+	s.vel = dir;
+
+	hvec = cross(s.pos, s.vel);
+	h2 = dot(hvec, hvec); // moment angulaire² conservé
+
+	rs = 2.0 * bh_mass;
+
+	// distance d'evasion : toujours r0 + une marge fixe, jamais un multiple de r0
+	// (sinon la distance a parcourir explose avec r0 et la perf s'effondre au loin)
+	r_max = length(s.pos) + 50.0 * rs;
+
+	for (int i = 0; i < steps; i++)
+	{
+		r = length(s.pos);
+		s = rk4_step(s, h2, bh_mass, step_size * clamp(r / rs, 0.1, 200.0));
+		r = length(s.pos);
+
+		if (r < rs)
+		{
+			// Horizon franchi -> noir
+			return vec4 (0, 0, 0, 1);
+		}
+		if (r > r_max)
+		{
+			// Évasion -> échantillonner le skybox avec la vitesse finale
+			return sample_skybox(normalize(s.vel));
+		}
+	}
+	// Si on arrive ici sans être sorti : budget de pas épuisé
+	return vec4 (0, 0, 0, 1);
+}
+
+
+
+/* ——— Main —————————————————————————————————————————————————————————— */
 
 void main()
 {
@@ -18,11 +142,7 @@ void main()
 
 	vec2 uv = vec2(pixel) / vec2(size);
 	vec3 dir = normalize(cam_corner + uv.x * cam_hor + uv.y * cam_ver - cam_origin);
-	float lon = atan(dir.z, dir.x);   // atan(y, x) en GLSL = atan2 en C, résultat en [-pi, pi]
-	float lat = asin(dir.y);           // [-pi/2, pi/2], Y = axe vertical (cohérent avec ton "up" dans calcul_viewport)
-	vec2 sky_uv = vec2(lon / (2.0 * 3.14159265) + 0.5, lat / 3.14159265 + 0.5);
-	vec4 color = texture(skybox, sky_uv);
-
+	vec4 color = photon_trajectory(dir);
 
 
 	imageStore(outImg, pixel, color);

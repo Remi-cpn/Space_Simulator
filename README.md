@@ -13,6 +13,9 @@ l'intégration numérique de trajectoires.
 
 ---
 
+Premier visuel du trou noir
+![alt text](image.png)
+
 ## Principe du moteur
 
 1. La caméra émet un rayon par pixel (comme un raytracer classique).
@@ -174,8 +177,8 @@ L'équation de Binet relativiste pour l'orbite d'un photon
       (poser `G = c = 1`, distances en multiples de `rs`).
 - [x] Équation d'orbite d'un photon (forme de Binet relativiste) :
       trajectoire 2D `u(φ)` avec `u = 1/r` dans le plan du rayon.
-- [ ] Construction du plan de chaque rayon + passage 3D → 2D → 3D.
-- [ ] Conditions initiales : paramètre d'impact `b`, direction de départ.
+- [x] Construction du plan de chaque rayon + passage 3D → 2D → 3D.
+- [x] Conditions initiales : paramètre d'impact `b`, direction de départ.
 
 **Validation :** savoir expliquer l'équation terme par terme, et prédire :
 sphère de photons à `1.5 rs`, capture si `b < b_crit ≈ 2.6 rs`.
@@ -183,15 +186,15 @@ sphère de photons à `1.5 rs`, capture si `b < b_crit ≈ 2.6 rs`.
 ### Phase 3 — Intégration des géodésiques
 > Objectif : la courbure entre dans le shader.
 
-- [ ] RK4 sur l'équation d'orbite, pas fixe pour commencer.
-- [ ] Les trois sorties : horizon (`r < rs`), évasion (`r > r_max`,
+- [x] RK4 sur l'équation d'orbite, pas fixe pour commencer.
+- [x] Les trois sorties : horizon (`r < rs`), évasion (`r > r_max`,
       direction finale → skybox), budget de pas épuisé.
-- [ ] Uniforms : masse, position du trou noir, nombre de pas, taille du pas.
-- [ ] Précision : `highp` partout ; surveiller les artefacts près de
+- [x] Uniforms : masse, position du trou noir, nombre de pas, taille du pas.
+- [x] Précision : `highp` partout ; surveiller les artefacts près de
       l'horizon (pas adaptatif si besoin).
 
 **Validation :** la silhouette noire apparaît, entourée de déformations.
-Aucun disque n'a été modélisé — si tu le vois, la physique est juste.
+Aucun disque n'a été modélisé.
 
 ### Phase 4 — Validation quantitative
 > Objectif : prouver que c'est correct, pas juste joli.
@@ -290,6 +293,17 @@ deviendra bloquant (pas des bugs à corriger dans l'immédiat).
   enchaînés). Vraie solution : orientation par quaternion (ni dérive, ni
   singularité aux pôles) — demande d'ajouter la multiplication de quaternions
   et la rotation d'un vecteur par quaternion à la `librt`, pas encore fait.
+
+- **Scintillement près de l'anneau de photons :** les pixels dont le rayon
+  passe très proche de `b_crit` scintillent d'une frame à l'autre — un rayon
+  peut faire un tour de plus ou de moins autour du trou noir pour un
+  déplacement infime de la caméra ou une infime différence de précision
+  flottante, renvoyant une couleur de ciel complètement différente. C'est
+  physique (instabilité de la sphère de photons, déjà notée dans "Pièges
+  connus"), amplifié par l'absence de supersampling (un seul rayon par
+  pixel, alors que c'est justement la zone la plus "magnifiée" par la
+  lentille). Vraie solution : supersampling (Phase 5) — moyenner plusieurs
+  rayons par pixel lissera cette instabilité locale.
 
 ## Références à consulter
 

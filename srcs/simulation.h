@@ -44,6 +44,12 @@ typedef struct s_camera
 	double		focal;
 }	t_camera;
 
+typedef struct s_blackhole
+{
+	float	mass;
+	t_vec	pos;
+}	t_blackhole;
+
 typedef struct	s_sphere
 {
 
@@ -74,6 +80,7 @@ typedef struct	s_simulation
 	t_camera	cam;
 	t_object	*objs;
 	t_skybox	sky;
+	t_blackhole bh;
 	int			nb_obj;
 }	t_simulation;
 

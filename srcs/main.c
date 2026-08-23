@@ -28,6 +28,10 @@ static void	update(t_data *d)
 		glUniform3f(glGetUniformLocation(d->program, "cam_corner"), d->sim.cam.corner.x, d->sim.cam.corner.y, d->sim.cam.corner.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_hor"),    d->sim.cam.hor.x,    d->sim.cam.hor.y,    d->sim.cam.hor.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_ver"),    d->sim.cam.ver.x,    d->sim.cam.ver.y,    d->sim.cam.ver.z);
+		glUniform1f(glGetUniformLocation(d->program, "bh_mass"), d->sim.bh.mass);
+		glUniform3f(glGetUniformLocation(d->program, "bh_pos"), d->sim.bh.pos.x, d->sim.bh.pos.y, d->sim.bh.pos.z);
+		glUniform1i(glGetUniformLocation(d->program, "steps"), 500);
+		glUniform1f(glGetUniformLocation(d->program, "step_size"), 1.0f);
 
 
 		// Dispatch un peu comme du multi threading

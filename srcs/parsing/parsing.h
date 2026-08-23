@@ -22,3 +22,4 @@ void	parsing(t_data *d, char *file_name);
 void	init_sim(t_data *d);
 
 void	add_cam(t_simulation *s, char **line_split);
+void	add_bh(t_simulation *s, char **line_split);
