@@ -69,9 +69,6 @@ static void	print_camera(t_data *d)
 	printf("\033[2K\r - fov : %.1f\n", d->sim.cam.fov);
 }
 
-// ft_printf (libft) ne gère pas %f -> printf standard utilisé ici pour les floats/doubles.
-// \033[2K efface la ligne courante, \033[NA remonte le curseur de N lignes :
-// réécriture propre même si le nombre de lignes change (ex. nb_obj qui varie).
 void	print_hud(t_data *d)
 {
 	static int	prev_lines = 0;
