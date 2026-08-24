@@ -24,6 +24,7 @@ typedef struct s_input
 	bool	o;
 	bool	ctrl;
 	bool	space;
+	bool	shift;
 	bool	r;
 	bool	n;
 	bool	p;
@@ -33,6 +34,7 @@ typedef struct s_input
 
 typedef enum e_key
 {
+	NONE = -1,
 	ESC = 41,
 	D = 7,
 	A = 4,
@@ -45,6 +47,7 @@ typedef enum e_key
 	I = 12,
 	O = 18,
 	LCTRL = 224,
+	LSHIFT = 225,
 	SPACE = 44,
 	WHEEL_F = 1,
 	WHEEL_B = 2,
@@ -55,6 +58,9 @@ typedef enum e_key
 	LESS = 86,
 	PGUP = 75,
 	PGDOWN = 78,
+	ENTER = 40,
+	BACK = 42,
+	TAB = 43,
 }	t_key;
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */

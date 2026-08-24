@@ -5,6 +5,8 @@
 #include "exit.h"
 #include "../debug/debug.h"
 
+// Libere proprement les ressources GL/SDL/textures, affiche un message
+// d'erreur si fourni, puis quitte avec le bon code de sortie.
 void	exit_prog(t_data *d, int exit_code, const char *error_message)
 {
 	int	i;

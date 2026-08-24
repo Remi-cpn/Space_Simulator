@@ -7,6 +7,7 @@
 #include "../debug/debug.h"
 #include "../shaders/shader.h"
 
+// Renvoie un t_input entierement a zero (aucune touche enfoncee).
 static t_input	init_input(void)
 {
 	t_input	i;
@@ -15,6 +16,8 @@ static t_input	init_input(void)
 	return (i);
 }
 
+// Initialise SDL, cree la fenetre et le contexte OpenGL 4.3 Core,
+// avec le flag debug pour recuperer les erreurs du driver.
 static void	init_SDL(t_data *d)
 {
 	// Initialisation du système vidéo
@@ -46,6 +49,8 @@ static void	init_SDL(t_data *d)
 		exit_prog(d, ERROR_SDL_CONTEXT, SDL_GetError());
 }
 
+// Point d'entree de l'init globale : SDL/GL, glad, callback de debug,
+// texture de sortie, compilation du shader, etat par defaut.
 t_data	init_program(void)
 {
 	t_data	d;
@@ -68,8 +73,12 @@ t_data	init_program(void)
 	// Creation du shader
 	d.program = create_compute_shader(&d, "srcs/shaders/shader.comp");
 
+	// Reglages
 	d.input = init_input();
 	d.cam_target = -1;
 	d.nbr_ray = 2;
+	d.wheel_coef = 1;
+	d.exposure = 1.0;
+	d.gamma = 1.0;
 	return (d);
 }

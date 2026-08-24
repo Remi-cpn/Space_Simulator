@@ -39,6 +39,8 @@
 // 	return (true);
 // }
 
+// Fait tourner la direction de la camera (fleches) par rotation
+// incrementale autour de ses axes locaux hor_n/ver_n.
 static void	rotate_movement(t_data *d, t_camera *cam, double speed_init)
 {
 	double	speed;
@@ -60,6 +62,8 @@ static void	rotate_movement(t_data *d, t_camera *cam, double speed_init)
 	vec_normalize(&(cam->dir));
 }
 
+// Deplace l'origine de la camera selon les touches maintenues
+// (WASD + Ctrl/Espace pour bas/haut).
 static void	linear_movement(t_data *d, t_camera *cam, double speed)
 {
 	d->cam_target = -1;
@@ -77,6 +81,8 @@ static void	linear_movement(t_data *d, t_camera *cam, double speed)
 		cam->origin = vec_add(cam->origin, vec_mult_scalar(cam->ver_n, speed));
 }
 
+// Applique le deplacement ou la rotation selon les touches actives,
+// puis recalcule le viewport si quelque chose a bouge.
 static bool	update_cam_free(t_data *d, double speed, double speed_rot)
 {
 	if (d->input.a || d->input.w || d->input.d || d->input.s
@@ -99,6 +105,8 @@ static bool	update_cam_free(t_data *d, double speed, double speed_rot)
 	return (true);
 }
 
+// Point d'entree des controles camera (mode libre pour l'instant,
+// le mode orbite est desactive/en attente de la v2).
 void	update_cam(t_data *d, double speed, double speed_rot)
 {
 	// if (d->cam_target >= 0)
