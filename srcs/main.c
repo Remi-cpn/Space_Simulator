@@ -6,6 +6,7 @@
 #include "exit/exit.h"
 #include "events/events.h"
 #include "parsing/parsing.h"
+#include "debug/debug.h"
 
 static void	update(t_data *d)
 {
@@ -32,6 +33,7 @@ static void	update(t_data *d)
 		glUniform3f(glGetUniformLocation(d->program, "bh_pos"), d->sim.bh.pos.x, d->sim.bh.pos.y, d->sim.bh.pos.z);
 		glUniform1i(glGetUniformLocation(d->program, "steps"), 500);
 		glUniform1f(glGetUniformLocation(d->program, "step_size"), 1.0f);
+		glUniform1i(glGetUniformLocation(d->program, "nbr_ray"), d->nbr_ray);
 
 
 		// Dispatch un peu comme du multi threading
@@ -46,7 +48,7 @@ static void	update(t_data *d)
 
 
 		update_cam(d, 0.6, 0.1);
-
+		print_hud(d);
 
 		// Envoi l'image sur l'ecran
 		SDL_GL_SwapWindow(d->win);
@@ -58,8 +60,9 @@ int	main(int ac, char **av)
 {
 	t_data	d;
 
-	if (ac != 2 && ac != 3)
-		return (1);
+	(void)ac;
+	// if (ac != 2 && ac != 3)
+	// 	return (1);
 
 	d = init_program();
 	parsing(&d, NULL);

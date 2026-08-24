@@ -10,6 +10,7 @@
 #include <SDL2/SDL.h>
 
 #include "../../library/libft/libft.h"
+#include "../data.h"
 
 #ifndef APIENTRY
 # define APIENTRY
@@ -18,6 +19,7 @@
 /* ——— Function prototypes —————————————————————————————————————————————————— */
 // APIENTRY est la pour la portabilité
 void APIENTRY	gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *user_param);
+void			print_hud(t_data *d);
 
 
 

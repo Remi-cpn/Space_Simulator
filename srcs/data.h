@@ -52,14 +52,16 @@ typedef struct s_data
 	GLuint			fbo;
 	GLuint			program;
 
-	//Textures
+	// Textures
 		t_texture		*tex;
 		int				tex_count;
 		int				tex_capacity;
 
 	t_input			input;
-
 	t_simulation	sim;
+	unsigned int	nbr_ray;
+
+	// Camera
 	int				cam_target;
 }	t_data;
 
