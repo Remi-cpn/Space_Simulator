@@ -73,9 +73,12 @@ t_data	init_program(void)
 	// Creation du shader
 	d.program = create_compute_shader(&d, "srcs/shaders/shader.comp");
 
+	// Reglages
 	d.input = init_input();
 	d.cam_target = -1;
 	d.nbr_ray = 2;
 	d.wheel_coef = 1;
+	d.exposure = 1.0;
+	d.gamma = 1.0;
 	return (d);
 }

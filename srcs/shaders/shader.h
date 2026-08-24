@@ -18,5 +18,6 @@
 /* ——— Function prototypes —————————————————————————————————————————————————— */
 char	*read_source_compute_shader(t_data *d, char *shader_name);
 GLuint	create_compute_shader(t_data *d, char *shader_name);
+void	params_gl(t_data *d);
 
 #endif

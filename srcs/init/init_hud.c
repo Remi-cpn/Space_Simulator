@@ -13,6 +13,8 @@ static void	init_hud_params(t_data *d, t_hud_db *cat)
 {
 	hud_append(&cat->child, hud_new(d, "rayons/px", HUD_UINT, &d->nbr_ray));
 	hud_append(&cat->child, hud_new(d, "coef molette", HUD_UINT, &d->wheel_coef));
+	hud_append(&cat->child, hud_new(d, "exposure", HUD_FLOAT, &d->exposure));
+	hud_append(&cat->child, hud_new(d, "gamma", HUD_FLOAT, &d->gamma));
 }
 
 // Enregistre dans l'arbre la masse et la position du trou noir.
@@ -44,7 +46,7 @@ void	init_hud(t_data *d)
 	t_hud_db	*cat;
 
 	d->hud_db = NULL;
-	cat = hud_new(d, "Parametres (touches)", HUD_NONE, NULL);
+	cat = hud_new(d, "Reglage", HUD_NONE, NULL);
 	hud_append(&d->hud_db, cat);
 	init_hud_params(d, cat);
 	cat = hud_new(d, "Trou noir", HUD_NONE, NULL);

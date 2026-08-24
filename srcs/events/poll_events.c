@@ -69,7 +69,7 @@ static bool	set_wheel(t_data *d, int ev)
 	}
 
 	// Molette : ajuste la valeur ciblee dans l'arbre HUD
-	amount = d->wheel_coef;
+	amount = (ev > 0) ? (int)d->wheel_coef : -(int)d->wheel_coef;
 	if (h->tag == HUD_UINT && h->u_value_ptr.u == &d->wheel_coef)
 	{
 		if ((int)*h->u_value_ptr.u + amount >= 1

@@ -49,26 +49,24 @@ typedef struct s_data
 		int				win_h;
 		int				win_w;
 		SDL_GLContext	ctx;
-
 	GLuint			img;
 	GLuint			fbo;
 	GLuint			program;
-
 	// Textures
 		t_texture		*tex;
 		int				tex_count;
 		int				tex_capacity;
-
-	t_input			input;
-	t_simulation	sim;
-	unsigned int	nbr_ray;
-	unsigned int	wheel_coef;
-
+	t_simulation	sim;	
+	// Reglage
+		t_input			input;
+		unsigned int	nbr_ray;
+		unsigned int	wheel_coef;
+		float			exposure;
+		float			gamma;
 	// Camera
-	int				cam_target;
-
+		int				cam_target;
 	// HUD
-	t_hud_db		*hud_db;
+		t_hud_db		*hud_db;
 }	t_data;
 
 
