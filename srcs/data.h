@@ -19,6 +19,7 @@
 # include "events/events.h"
 # include "../library/libft/libft.h"
 # include "simulation.h"
+# include "parsing/parsing.h"
 
 
 /* ——— Define ——————————————————————————————————————————————————————————————— */
@@ -29,6 +30,7 @@
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
 typedef struct s_input	t_input;
+typedef struct s_hud_db	t_hud_db;
 
 
 /* ——— Struct texture ——————————————————————————————————————————————————————— */
@@ -60,9 +62,13 @@ typedef struct s_data
 	t_input			input;
 	t_simulation	sim;
 	unsigned int	nbr_ray;
+	unsigned int	wheel_coef;
 
 	// Camera
 	int				cam_target;
+
+	// HUD
+	t_hud_db		*hud_db;
 }	t_data;
 
 
@@ -72,5 +78,6 @@ t_data			init_program(void);
 void			init_image(t_data *d);
 void			init_resize_image(t_data *d, int new_w, int new_h);
 GLuint			load_texture(t_data *d, char *path);
+void			init_hud(t_data *d);
 
 #endif

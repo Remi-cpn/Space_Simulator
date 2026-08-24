@@ -57,7 +57,27 @@ La physique de la lumière vit dans le shader.
 | `Espace` / `Ctrl`   | Déplacement haut / bas                    |
 | Flèches directionnelles | Rotation de la caméra (regard)       |
 | `Page Up` / `Page Down` | Nombre de rayons par pixel (supersampling), min. 1 |
+| `Tab`               | Navigue dans le HUD (catégorie suivante, ou valeur suivante une fois dans une catégorie) |
+| `Entrée`            | Rentre dans la catégorie ciblée           |
+| `Retour arrière`    | Ressort de la catégorie courante          |
+| Molette souris      | Ajuste la valeur ciblée dans le HUD — le pas grandit avec le défilement continu (coefficient de vitesse `coef molette`, 1 à 5, lui-même visible/réglable dans le HUD) |
 | `Échap`             | Quitter                                   |
+
+### HUD de debug (terminal)
+
+Pas de vrai HUD à l'écran pour l'instant : un widget dessiné (type ImGui) passerait
+par le pipeline vertex/fragment classique, hors de portée tant qu'on reste dans les
+clous du sujet RT (fragment shaders interdits) — remis à plus tard.
+
+En attendant, un HUD texte tourne dans le terminal (redessiné sur place via des
+séquences ANSI, pas de spam) : les valeurs de la simulation sont rangées dans un
+arbre par catégorie (`Paramètres`, `Trou noir`, `Objets`, `Caméra`), chaque feuille
+portant un pointeur direct vers la vraie variable (`bh.mass`, `cam.fov`, etc.) plutôt
+qu'une copie. `Tab` déplace la cible affichée (`Target : ...`) à l'intérieur du
+niveau courant en bouclant dessus (catégories au niveau racine, valeurs une fois
+entré dans une catégorie via `Entrée`) ; la molette modifie directement la valeur
+ciblée, avec un pas propre à son type (entier ou flottant) et un plancher à `0`
+quand une valeur négative n'aurait pas de sens (masse, nombre de rayons).
 
 ---
 
@@ -223,7 +243,10 @@ Aucun disque n'a été modélisé.
 ### Phase 5 — Confort
 - [x] Supersampling (N rayons par pixel, moyennés) — mélange *intra*-pixel
       uniquement.
-- [ ] Masse ajustable en direct, zoom, capture d'écran.
+- [x] Paramètres ajustables en direct (masse, position/direction caméra,
+      nombre de rayons...) via un HUD de debug terminal navigable (`Tab` /
+      `Entrée` / `Retour arrière` / molette) — dépasse le scope initial
+      "masse ajustable", généralisé à toute valeur enregistrée dans l'arbre.
 - [ ] Exposition / gamma.
 
 ---

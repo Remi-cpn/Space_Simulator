@@ -48,7 +48,6 @@ static void	update(t_data *d)
 
 
 		update_cam(d, 0.6, 0.1);
-		print_hud(d);
 
 		// Envoi l'image sur l'ecran
 		SDL_GL_SwapWindow(d->win);

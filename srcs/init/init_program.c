@@ -71,5 +71,6 @@ t_data	init_program(void)
 	d.input = init_input();
 	d.cam_target = -1;
 	d.nbr_ray = 2;
+	d.wheel_coef = 1;
 	return (d);
 }
