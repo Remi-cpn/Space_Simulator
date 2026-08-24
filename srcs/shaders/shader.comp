@@ -1,9 +1,13 @@
 #version 430
+
+#define GOLDEN_NBR_X 0.754877666
+#define GOLDEN_NBR_Y 0.569840296
+
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(binding = 0, rgba8) uniform image2D outImg;
 uniform sampler2D skybox;
 
-//Camera
+// Camera
 uniform vec3 	cam_origin;
 uniform vec3 	cam_corner;
 uniform vec3 	cam_hor;
@@ -14,6 +18,9 @@ uniform float	bh_mass;
 uniform vec3	bh_pos;	// position du trou noir
 uniform int		steps;	// nombre de pas RK4
 uniform float	step_size;	// h
+
+// Rayon par pixels
+uniform int		nbr_ray;
 
 
 /* ——— choix du pixel sur le skybox —————————————————————————————————————————————————————————— */
@@ -134,16 +141,22 @@ vec4 photon_trajectory(vec3 dir)
 
 void main()
 {
-	ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
-	ivec2 size  = imageSize(outImg);
+	ivec2	pixel = ivec2(gl_GlobalInvocationID.xy);
+	ivec2	size  = imageSize(outImg);
 
 	if (pixel.x >= size.x || pixel.y >= size.y || size.x == 0 || size.y == 0)
 		return;
 
-	vec2 uv = vec2(pixel) / vec2(size);
-	vec3 dir = normalize(cam_corner + uv.x * cam_hor + uv.y * cam_ver - cam_origin);
-	vec4 color = photon_trajectory(dir);
+	// Boucle d'envoi de rayon par pixel
+	vec4	color = vec4(0, 0, 0, 0);
+	vec2	inv_size = 1.0 / vec2(size);
+	for (int i = 0; i < nbr_ray; i++)
+	{
+		vec2	offset = fract(vec2(i) * vec2(GOLDEN_NBR_X, GOLDEN_NBR_Y));
+		vec2	uv = (vec2(pixel) + offset) * inv_size;
+		vec3	dir = normalize(cam_corner + uv.x * cam_hor + uv.y * cam_ver - cam_origin);
+		color += photon_trajectory(dir);
+	}
 
-
-	imageStore(outImg, pixel, color);
+	imageStore(outImg, pixel, color / nbr_ray);
 }

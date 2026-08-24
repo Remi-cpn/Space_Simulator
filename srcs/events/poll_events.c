@@ -5,8 +5,9 @@
 #include "events.h"
 #include "../data.h"
 
-static bool	set_input(t_input *input, int scancode, bool value)
+static bool	set_input(t_data *d, t_input *input, int scancode, bool value, int flag)
 {
+	//ft_printf("%d\n", scancode);
 	switch (scancode)
 	{
 		case W : input->w = value; break;
@@ -21,6 +22,9 @@ static bool	set_input(t_input *input, int scancode, bool value)
 
 		case LCTRL : input->ctrl = value; break;
 		case SPACE : input->space = value; break;
+
+		case PGUP : d->nbr_ray += flag; break;
+		case PGDOWN : d->nbr_ray = (d->nbr_ray == 1) ? d->nbr_ray : d->nbr_ray - flag; break;
 
 		case ESC : return false;
 
@@ -47,9 +51,9 @@ bool	lisen_poll_event(t_data *d)
 	{
 		// Key events
 		if (ev.type == SDL_KEYDOWN)
-			continu = set_input(&(d->input), ev.key.keysym.scancode, true);
+			continu = set_input(d, &(d->input), ev.key.keysym.scancode, true, 1);
 		else if (ev.type == SDL_KEYUP)
-			continu = set_input(&(d->input), ev.key.keysym.scancode, false);
+			continu = set_input(d, &(d->input), ev.key.keysym.scancode, false, 0);
 
 		// Event sur la windows
 		if (ev.type == SDL_WINDOWEVENT)

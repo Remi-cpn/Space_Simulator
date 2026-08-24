@@ -49,6 +49,18 @@ La physique de la lumière vit dans le shader.
 
 ---
 
+## Contrôles
+
+| Touche              | Action                                  |
+|---------------------|------------------------------------------|
+| `W` / `A` / `S` / `D` | Déplacement avant / gauche / arrière / droite |
+| `Espace` / `Ctrl`   | Déplacement haut / bas                    |
+| Flèches directionnelles | Rotation de la caméra (regard)       |
+| `Page Up` / `Page Down` | Nombre de rayons par pixel (supersampling), min. 1 |
+| `Échap`             | Quitter                                   |
+
+---
+
 ## Rendu par shaders
 
 Aucune boucle sur les pixels n'existe dans le code C : le calcul de
@@ -209,7 +221,7 @@ Aucun disque n'a été modélisé.
 **Validation :** les chiffres collent à la théorie à quelques % près.
 
 ### Phase 5 — Confort
-- [ ] Supersampling (N rayons par pixel, moyennés) — mélange *intra*-pixel
+- [x] Supersampling (N rayons par pixel, moyennés) — mélange *intra*-pixel
       uniquement.
 - [ ] Masse ajustable en direct, zoom, capture d'écran.
 - [ ] Exposition / gamma.
@@ -304,6 +316,24 @@ deviendra bloquant (pas des bugs à corriger dans l'immédiat).
   pixel, alors que c'est justement la zone la plus "magnifiée" par la
   lentille). Vraie solution : supersampling (Phase 5) — moyenner plusieurs
   rayons par pixel lissera cette instabilité locale.
+
+- **Résolution interne réglable (perf sous charge) :** pour l'instant la
+  seule protection contre une charge GPU excessive est le supersampling
+  (`nbr_ray`, borné à 1 minimum) — pas de garde-fou dans l'autre sens. Le
+  besoin viendra avec la v3 (N-corps) : si la caméra doit rester fluide
+  pendant que le GPU est aussi sollicité par la dynamique, il faudra pouvoir
+  descendre sous 1 rayon par pixel. Piste envisagée puis écartée pour
+  l'instant : partager un rayon entre plusieurs pixels voisins (ex. 1 pour 4)
+  directement dans la grille pleine résolution — rejetée à cause de la
+  divergence de warp (les invocations "meneuses" et "suiveuses" mélangées
+  dans le même warp/wavefront font attendre tout le paquet, donc gain quasi
+  nul en pratique). Vraie solution : rendre dans une texture plus petite
+  (dispatch réduit, ex. `taille/2` dans chaque dimension) puis upscaler au
+  `glBlitFramebuffer` (qui scale nativement src→dst de tailles différentes,
+  `GL_NEAREST` pour rester cohérent avec l'esthétique pixelisée) — un vrai
+  quart des invocations, sans divergence. Orthogonal au supersampling : les
+  deux réglages (résolution interne, `nbr_ray`) pourront cohabiter et se
+  piloter indépendamment selon la charge du moment.
 
 ## Références à consulter
 

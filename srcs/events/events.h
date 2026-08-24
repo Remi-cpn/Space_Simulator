@@ -53,6 +53,8 @@ typedef enum e_key
 	P = 19,
 	MOST = 87,
 	LESS = 86,
+	PGUP = 75,
+	PGDOWN = 78,
 }	t_key;
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
