@@ -6,11 +6,8 @@
 #include "debug.h"
 #include "../exit/exit.h"
 
-// current = noeud vise (une categorie si on est au niveau racine, une
-// valeur si on est rentre dans une categorie).
-// category = la categorie dans laquelle on est rentre, pour pouvoir y
-// revenir avec BACK (pas de pointeur "parent" dans t_hud_db, donc on
-// retient simplement d'ou on vient).
+// Deplace/renvoie le noeud cible selon la touche recue (Tab/Entree/
+// Retour), en gardant l'etat de navigation dans des statics.
 t_hud_db	*hud_select(t_data *d, t_key key)
 {
 	static t_hud_db	*current = NULL;
@@ -35,6 +32,8 @@ t_hud_db	*hud_select(t_data *d, t_key key)
 	return (current);
 }
 
+// Alloue un noeud de l'arbre HUD et branche le pointeur vers la vraie
+// variable dans le bon membre de l'union, selon le tag.
 t_hud_db	*hud_new(t_data *d, char *name, t_tag tag, void *ptr)
 {
 	t_hud_db	*node;
@@ -55,6 +54,8 @@ t_hud_db	*hud_new(t_data *d, char *name, t_tag tag, void *ptr)
 	return (node);
 }
 
+// Ajoute new_node en fin de la liste chainee *head, et met a jour son
+// "head" vers le premier noeud de cette liste (pour boucler au Tab).
 void	hud_append(t_hud_db **head, t_hud_db *new_node)
 {
 	t_hud_db	*last;

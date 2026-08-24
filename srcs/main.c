@@ -8,15 +8,10 @@
 #include "parsing/parsing.h"
 #include "debug/debug.h"
 
-static void	update(t_data *d)
+// Envoie les uniforms de la frame courante au shader et dispatch le
+// compute shader, puis blit le resultat a l'ecran.
+static void	params_gl(t_data *d)
 {
-	bool	running;
-	running = true;
-
-	while (running)
-	{
-		running = lisen_poll_event(d);
-
 		// Creation de l'image
 		glUseProgram(d->program);
 
@@ -45,16 +40,28 @@ static void	update(t_data *d)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, d->fbo);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		glBlitFramebuffer(0, 0, d->win_w, d->win_h, 0, 0, d->win_w, d->win_h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
 
+// Boucle de rendu principale : evenements, rendu GPU, deplacement
+// camera, swap de la fenetre.
+static void	update(t_data *d)
+{
+	bool	running;
+	running = true;
 
+	while (running)
+	{
+		running = lisen_poll_event(d);
+		params_gl(d);
 		update_cam(d, 0.6, 0.1);
-
 		// Envoi l'image sur l'ecran
 		SDL_GL_SwapWindow(d->win);
 	}
 
 }
 
+// Initialise le programme, construit la scene, puis lance la boucle
+// de rendu jusqu'a la fermeture.
 int	main(int ac, char **av)
 {
 	t_data	d;

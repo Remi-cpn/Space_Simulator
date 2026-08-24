@@ -5,6 +5,8 @@
 #include "../simulation.h"
 #include "../parsing/parsing.h"
 
+// Construit la base orthonormee de la camera (hor_n/ver_n) et le coin
+// du viewport, a partir de dir/fov — meme maths que le RT.
 void	calcul_viewport(t_camera *cam, double ratio)
 {
 	double				fov_rad;
@@ -31,6 +33,8 @@ void	calcul_viewport(t_camera *cam, double ratio)
 	cam->corner = vec_add(cam->corner, vec_mult_scalar(cam->dir, cam->focal));
 }
 
+// Calcule le viewport initial de la camera a partir de la resolution
+// de la fenetre.
 void	init_sim(t_data *d)
 {
 	calcul_viewport(&(d->sim.cam), (double)d->win_w / (double)d->win_h);

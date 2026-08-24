@@ -9,6 +9,8 @@
 # define APIENTRY
 #endif
 
+// Traduit le GLenum "source" d'un message de debug OpenGL en chaine
+// lisible, pour l'affichage dans gl_debug_callback.
 static const char	*debug_source(GLenum source)
 {
 	if (source == GL_DEBUG_SOURCE_API)
@@ -24,6 +26,8 @@ static const char	*debug_source(GLenum source)
 	return ("OTHER");
 }
 
+// Traduit le GLenum "type" d'un message de debug OpenGL (erreur,
+// deprecation, perf...) en chaine lisible.
 static const char	*debug_type(GLenum type)
 {
 	if (type == GL_DEBUG_TYPE_ERROR)
@@ -39,6 +43,8 @@ static const char	*debug_type(GLenum type)
 	return ("OTHER");
 }
 
+// Traduit le GLenum "severity" d'un message de debug OpenGL en
+// chaine lisible (HIGH/MEDIUM/LOW/NOTIF).
 static const char	*debug_severity(GLenum severity)
 {
 	if (severity == GL_DEBUG_SEVERITY_HIGH)
@@ -50,6 +56,8 @@ static const char	*debug_severity(GLenum severity)
 	return ("NOTIF");
 }
 
+// Assemble les traductions ci-dessus en une ligne "[GL][SRC][TYPE][SEV] msg"
+// ecrite sur stderr ; ignore les simples notifications.
 void APIENTRY	gl_debug_callback(GLenum source, GLenum type, GLuint id,
 					GLenum severity, GLsizei length,
 					const GLchar *message, const void *user_param)

@@ -4,7 +4,8 @@
 
 #include "../parsing.h"
 
-// Modifier car pas vraiment de parsing encore
+// Modifier car pas vraiment de parsing encore.
+// Trou noir code en dur : masse 1, position (0,0,0).
 void	add_bh(t_simulation *s, char **line_split)
 {
 	(void)line_split;
@@ -12,7 +13,8 @@ void	add_bh(t_simulation *s, char **line_split)
 	s->bh.pos = (t_vec){0, 0, 0};
 }
 
-// Modifier car pas vraiment de parsing encore
+// Modifier car pas vraiment de parsing encore.
+// Camera codee en dur : origine (0,0,-20), direction +z, fov 70.
 void	add_cam(t_simulation *s, char **line_split)
 {
 	(void)line_split;

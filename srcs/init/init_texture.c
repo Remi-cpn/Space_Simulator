@@ -7,6 +7,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../external/stb/stb_image.h"
 
+// Charge une image (stb_image), l'upload en texture GL avec mipmaps,
+// et l'ajoute au cache (avec growth par bloc de 16).
 static GLuint	*add_texture(t_data *d, char *path)
 {
 	int				w;
@@ -54,6 +56,7 @@ static GLuint	*add_texture(t_data *d, char *path)
 	return (&(d->tex[d->tex_count - 1].id));
 }
 
+// Cherche une texture deja chargee par son chemin dans le cache.
 static t_texture *find_texture(t_data *d, char *path)
 {
 	int	i;
@@ -68,6 +71,8 @@ static t_texture *find_texture(t_data *d, char *path)
 	return (NULL);
 }
 
+// Renvoie l'id GL d'une texture, en la chargeant seulement si elle
+// n'est pas deja dans le cache.
 GLuint	load_texture(t_data *d, char *path)
 {
 	t_texture	*t;

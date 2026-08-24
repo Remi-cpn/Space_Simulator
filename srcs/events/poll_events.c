@@ -6,6 +6,8 @@
 #include "../data.h"
 #include "../debug/debug.h"
 
+// Met a jour les booleens de deplacement/HUD selon la touche recue,
+// et reimprime le HUD si une action HUD a change quelque chose.
 static bool	set_input(t_data *d, t_input *input, int scancode, bool value, int flag)
 {
 	//ft_printf("%d\n", scancode);
@@ -46,6 +48,8 @@ static bool	set_input(t_data *d, t_input *input, int scancode, bool value, int f
 }
 
 
+// Molette : Maj ajuste le coefficient de vitesse (1 a 5), sinon
+// ajuste la valeur ciblee dans l'arbre HUD avec ce coefficient.
 static bool	set_wheel(t_data *d, int ev)
 {
 	t_hud_db	*h;
@@ -93,6 +97,8 @@ static bool	set_wheel(t_data *d, int ev)
 	return (true);
 }
 
+// Reagit aux evenements de fenetre (pour l'instant : redimensionnement
+// -> reallocation de la texture/FBO a la bonne taille).
 static bool	window_event(t_data *d, SDL_Event ev)
 {
 	// Gestionnaire de resize
@@ -101,6 +107,8 @@ static bool	window_event(t_data *d, SDL_Event ev)
 	return true;
 }
 
+// Boucle sur tous les evenements SDL en attente et les redirige vers
+// le bon gestionnaire (clavier, molette, fenetre, fermeture).
 bool	lisen_poll_event(t_data *d)
 {
 	SDL_Event	ev;

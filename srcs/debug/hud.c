@@ -10,6 +10,8 @@
 # define HIGHLIGHT   "\033[7m"
 # define RESET       "\033[0m"
 
+// Traduit le type d'un objet de scene (t_obj) en nom affichable
+// dans le HUD.
 static const char	*obj_type_name(t_obj type)
 {
 	if (type == OBJ_SPHERE)
@@ -27,10 +29,8 @@ static const char	*obj_type_name(t_obj type)
 	return ("none");
 }
 
-// Cas particulier : les objets de scene ne sont pas encore des noeuds de
-// l'arbre (pas de v2 pour l'instant), donc pas ciblables/surlignables comme
-// le reste. A retirer le jour ou ils deviennent de vrais enfants de la
-// categorie "Objets".
+// Liste les objets de la scene (hors-arbre, pas encore de noeuds v2) ;
+// retourne le nombre de lignes imprimees pour le calcul du redessin.
 static int	print_scene_objects(t_data *d)
 {
 	int	i;
@@ -49,7 +49,8 @@ static int	print_scene_objects(t_data *d)
 	return (d->sim.nb_obj);
 }
 
-// ft_printf (libft) ne gère pas %f -> printf standard utilisé ici.
+// Affiche une valeur de l'arbre (surlignee si ciblee), castee selon
+// son tag ; printf standard car ft_printf ne gere pas %f.
 static void	print_leaf(t_hud_db *node, t_hud_db *target)
 {
 	const char	*hl;
@@ -67,9 +68,8 @@ static void	print_leaf(t_hud_db *node, t_hud_db *target)
 		printf("\033[2K\r%s - %s : %.2f%s\n", hl, node->name, *node->u_value_ptr.d, rst);
 }
 
-// Affiche une categorie (surlignee si elle est la cible) puis parcourt ses
-// enfants dans l'arbre -> generique, rien a retoucher ici si on ajoute une
-// valeur dans init_hud.c.
+// Affiche une categorie (surlignee si ciblee) puis ses valeurs enfants ;
+// generique, rien a retoucher si on ajoute un champ dans init_hud.c.
 static int	print_category(t_data *d, t_hud_db *cat, t_hud_db *target)
 {
 	t_hud_db	*child;
@@ -92,9 +92,8 @@ static int	print_category(t_data *d, t_hud_db *cat, t_hud_db *target)
 	return (lines);
 }
 
-// \033[2K efface la ligne courante, \033[NA remonte le curseur de N lignes :
-// reecriture propre meme si le nombre de lignes change (arbre plus profond,
-// objets en plus...), calcule dynamiquement a chaque appel.
+// Reecrit le HUD en place via ANSI (remonte de prev_lines, efface,
+// reimprime) ; parcourt l'arbre en entier a chaque appel.
 void	print_hud(t_data *d, t_hud_db *target)
 {
 	static int	prev_lines = 0;

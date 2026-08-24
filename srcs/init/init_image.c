@@ -6,6 +6,8 @@
 #include "../exit/exit.h"
 #include "../debug/debug.h"
 
+// Recree la texture/FBO a la nouvelle taille de fenetre (appelee au
+// resize), avec une taille minimale de 1x1 pour eviter un GL invalide.
 void	init_resize_image(t_data *d, int new_w, int new_h)
 {
 	if (d->fbo)
@@ -21,6 +23,8 @@ void	init_resize_image(t_data *d, int new_w, int new_h)
 	init_image(d);
 }
 
+// Cree la texture de sortie du compute shader et le FBO qui permet
+// de la blitter a l'ecran ensuite.
 void	init_image(t_data *d)
 {
 	glGenTextures(1, &(d->img));

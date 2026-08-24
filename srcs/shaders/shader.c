@@ -5,6 +5,8 @@
 #include "shader.h"
 #include "../exit/exit.h"
 
+// Lit un fichier shader entier en memoire (open/fstat/read), sans passer
+// par fopen/fread : on connait la taille exacte via fstat avant de lire.
 char	*read_source_compute_shader(t_data *d, char *shader_name)
 {
 	int			fd;
@@ -49,6 +51,8 @@ char	*read_source_compute_shader(t_data *d, char *shader_name)
 	return (buffer);
 }
 
+// Compile la source GLSL en compute shader et verifie chaque etape :
+// compilation, puis link du program renvoye (pret a etre dispatche).
 GLuint	create_compute_shader(t_data *d, char *shader_name)
 {
 	GLuint			shader_id;

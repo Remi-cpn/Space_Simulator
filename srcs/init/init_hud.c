@@ -7,12 +7,15 @@
 #include "../data.h"
 #include "../debug/debug.h"
 
+// Enregistre dans l'arbre les parametres reglables au clavier/molette
+// (nombre de rayons, coefficient de vitesse).
 static void	init_hud_params(t_data *d, t_hud_db *cat)
 {
 	hud_append(&cat->child, hud_new(d, "rayons/px", HUD_UINT, &d->nbr_ray));
 	hud_append(&cat->child, hud_new(d, "coef molette", HUD_UINT, &d->wheel_coef));
 }
 
+// Enregistre dans l'arbre la masse et la position du trou noir.
 static void	init_hud_blackhole(t_data *d, t_hud_db *cat)
 {
 	hud_append(&cat->child, hud_new(d, "masse", HUD_FLOAT, &d->sim.bh.mass));
@@ -21,6 +24,8 @@ static void	init_hud_blackhole(t_data *d, t_hud_db *cat)
 	hud_append(&cat->child, hud_new(d, "pos z", HUD_DOUBLE, &d->sim.bh.pos.z));
 }
 
+// Enregistre dans l'arbre le fov, la position et la direction de
+// la camera.
 static void	init_hud_camera(t_data *d, t_hud_db *cat)
 {
 	hud_append(&cat->child, hud_new(d, "fov", HUD_DOUBLE, &d->sim.cam.fov));
@@ -32,9 +37,8 @@ static void	init_hud_camera(t_data *d, t_hud_db *cat)
 	hud_append(&cat->child, hud_new(d, "dir z", HUD_DOUBLE, &d->sim.cam.dir.z));
 }
 
-// Categorie "Objets" laissee vide (pas de child) : nb_obj vaut toujours 0
-// tant que la v2 (parsing d'objets) n'existe pas -> sert de premier vrai
-// test pour le garde-fou "categorie vide" prevu cote navigation.
+// Construit l'arbre HUD complet (categories + valeurs) et l'affiche une
+// premiere fois ; "Objets" reste sans enfant tant que la v2 n'existe pas.
 void	init_hud(t_data *d)
 {
 	t_hud_db	*cat;
