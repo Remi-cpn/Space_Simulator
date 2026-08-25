@@ -14,7 +14,7 @@ l'intégration numérique de trajectoires.
 ---
 
 ![alt text](assets/readme/Blackhole.png)
-*Premier visuel du trou noir*
+*trou noir V1*
 
 ---
 
