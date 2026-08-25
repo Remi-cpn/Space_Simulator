@@ -13,7 +13,7 @@ l'intégration numérique de trajectoires.
 
 ---
 
-![alt text](assets/readme/Blackhole.png)
+![alt text](assets/readme/Blackholev1.png)
 *trou noir V1*
 
 ---
