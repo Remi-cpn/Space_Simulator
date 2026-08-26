@@ -21,7 +21,7 @@ LIBFT_DIR	= library/libft
 LIBRT_DIR	= library/librt
 LIBFT_A		= $(LIBFT_DIR)/libft.a
 LIBRT_A		= $(LIBRT_DIR)/librt.a
-LIB			= $(LIBFT_A) $(LIBRT_A)
+LIB			= $(LIBRT_A) $(LIBFT_A)
 
 
 # ——— Sous-dossiers sources —————————————————————————————————————————————————— #

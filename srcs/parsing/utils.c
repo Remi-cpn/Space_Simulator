@@ -100,6 +100,7 @@ int	count_line(t_data *d, char *file_name)
 	{
 		count += (str[0] != '\n' && str[0] != '#');
 		d->sim.nb_sun += (str[0] == 's' && str[1] == 'o');
+		d->sim.nb_bh += (str[0] == 'b' && str[1] == 'h');
 		d->sim.nb_light += (str[0] == 'L');
 		str = ft_freenull(str);
 		str = ft_get_next_line(fd);

@@ -382,6 +382,22 @@ deviendra bloquant (pas des bugs à corriger dans l'immédiat).
   deux réglages (résolution interne, `nbr_ray`) pourront cohabiter et se
   piloter indépendamment selon la charge du moment.
 
+- **Trou noir traité à part, hors du buffer d'objets (v2) :** les objets de
+  scène (sphères, anneaux, planètes) sont testés par intersection le long
+  de la géodésique via un buffer GPU (SSBO) ; le trou noir n'y figure pas —
+  il courbe la trajectoire (uniforms `bh_mass`/`bh_pos` dédiés dans
+  `photon_trajectory`), il ne se "touche" pas comme les autres objets. Choix
+  délibéré : essayer d'unifier les deux dans une même structure maintenant
+  reviendrait à deviner la forme d'un problème pas encore posé — la v3
+  (N-corps, "les corps massifs s'attirent et orbitent", au pluriel) va de
+  toute façon réécrire en profondeur l'intégration de la courbure (`h2`
+  conservé suppose une masse centrale unique ; plusieurs masses cassent
+  cette hypothèse et demandent une somme de forces en 3D, pas juste un
+  tableau de plus) — la v4 (disque) et la v5 (Kerr) touchent aussi la partie
+  gravité/métrique, jamais la structure du buffer d'objets. Cohérent avec ça,
+  le trou noir est sorti de l'union `t_object` et traité comme les soleils :
+  son propre tableau dans `t_simulation`, pas un type d'objet parmi d'autres.
+
 ## Références à consulter
 
 - Textures : NASA SVS *Deep Star Maps* (domaine public) ; textures

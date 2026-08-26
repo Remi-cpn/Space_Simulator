@@ -34,8 +34,8 @@ void	pars_texture_map(t_data *d, t_texture *t, char *texture_file, char *bump_fi
 void	init_sim(t_data *d);
 void	init_hud(t_data *d);
 
-void	add_cam(t_simulation *s, char **line_split);
-void	add_bh(t_data *d, t_object *o, char **l_split);
+void	add_cam(t_data *d, char **line_split);
+void	add_bh(t_data *d, t_blackhole *bh, char **l_split);
 void	add_sp_solar(t_data *d, t_object *o, char **l_split);
 void	add_ri(t_data *d, t_object *o, char **l_split, int idx);
 void	add_so(t_data *d, t_sun *s, char **l);

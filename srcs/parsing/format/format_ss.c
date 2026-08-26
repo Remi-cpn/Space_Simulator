@@ -38,23 +38,21 @@ void	add_light(t_data *d, char **line_split)
 		i = 0;
 }
 
-// Pas d'exemple "bh" dans test.ss pour confirmer les champs reserves —
-// on ne lit que ce qui est reellement utilise (nom, position, masse).
-void	add_bh(t_data *d, t_object *o, char **l_split)
+// <Identifiant> <Nom> <Position> <Masse> — trou noir traite a part,
+// hors de l'union t_object (voir "Dette technique" du README).
+void	add_bh(t_data *d, t_blackhole *bh, char **l_split)
 {
 	if (check_idx_string_tab(l_split, 3))
 	{
 		if (!double_valid(l_split[3]))
 			exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_BH_ARGS_MSG);
-		o->type = OBJ_BH;
-		o->physics_enabled = false;
-		o->name = get_name(l_split[1]);
-		o->shape.bh.pos = get_vec(d, l_split[2]);
-		o->shape.bh.mass = ft_atod(l_split[3]);
+		bh->name = get_name(l_split[1]);
+		bh->pos = get_vec(d, l_split[2]);
+		bh->mass = ft_atod(l_split[3]);
 	}
 	else
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_BH_ARGS_MSG);
-	if (o->shape.bh.mass <= 0.0)
+	if (bh->mass <= 0.0)
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_BH_ARGS_MSG);
 }
 

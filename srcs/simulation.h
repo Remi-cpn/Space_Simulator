@@ -64,7 +64,6 @@ typedef enum e_obj
 	OBJ_CYLINDER,
 	OBJ_CONE,
 	OBJ_RING,
-	OBJ_BH,
 }	t_obj;
 
 typedef struct s_camera
@@ -87,6 +86,7 @@ typedef struct	s_skybox
 
 typedef struct s_blackhole
 {
+	char	*name;
 	float	mass;
 	t_vec	pos;
 }	t_blackhole;
@@ -154,11 +154,10 @@ typedef struct s_object
 	//	t_plane			plane;
 	//	t_cylinder		cylinder;
 		t_ring			ring;
-		t_blackhole		bh;
 	}	shape;
 }	t_object;
 
-/* ——— World ———————————————————————————————————————————————————————————————— */
+/* ——— Simulation ——————————————————————————————————————————————————————————— */
 typedef struct	s_simulation
 {
 	// Cam
@@ -169,6 +168,9 @@ typedef struct	s_simulation
 	// Soleils
 		t_sun		*suns;
 		int			nb_sun;
+	// Trous noirs
+		t_blackhole	*blackholes;
+		int			nb_bh;
 	// Lumieres
 		t_light		*lights;
 		int			nb_light;

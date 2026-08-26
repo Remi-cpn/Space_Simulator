@@ -5,10 +5,11 @@
 #include "parsing.h"
 #include "../exit/exit.h"
 
-static void	pars_line_solar(t_data *d, char *line)
+static void	pars_line_ss(t_data *d, char *line)
 {
 	static int	i = 0;
 	static int	j = 0;
+	static int	k = 0;
 	char		**line_split;
 
 	line_split = ft_split(line, ' ');
@@ -21,7 +22,7 @@ static void	pars_line_solar(t_data *d, char *line)
 	else if (!ft_strncmp(line_split[0], "so", 3))
 		add_so(d, &d->sim.suns[j++], line_split);
 	else if (!ft_strncmp(line_split[0], "bh", 3))
-		add_bh(d, &d->sim.objs[i++], line_split);
+		add_bh(d, &d->sim.blackholes[k++], line_split);
 	else if (!ft_strncmp(line_split[0], "sp", 3))
 		add_sp_solar(d, &d->sim.objs[i++], line_split);
 	else if (!ft_strncmp(line_split[0], "ri", 3))
@@ -34,6 +35,7 @@ static void	pars_line_solar(t_data *d, char *line)
 	ft_free_array(line_split);
 	i = (i != d->sim.nb_obj) * i;
 	j = (j != d->sim.nb_sun) * j;
+	k = (k != d->sim.nb_bh) * k;
 }
 
 // static void	pars_line_rt(t_parsing *p, t_world *w, char *line)
@@ -68,7 +70,7 @@ static void	pars_line_solar(t_data *d, char *line)
 void	pars_line_dispatch(t_data *d, char *line, bool solar)
 {
 	if (solar == true)
-		pars_line_solar(d, line);
+		pars_line_ss(d, line);
 	// else
 	// 	pars_line_rt(p, w, l);
 }
