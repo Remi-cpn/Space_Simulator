@@ -23,6 +23,7 @@ l'intégration numérique de trajectoires.
 - [Patch Note](#patch-note)
 - [Principe du moteur](#principe-du-moteur)
 - [Stack technique](#stack-technique)
+- [Lancer le projet](#lancer-le-projet)
 - [Contrôles](#contrôles)
 - [Rendu par shaders](#rendu-par-shaders)
 - [Théorie](#théorie)
@@ -107,6 +108,38 @@ flowchart LR
 
 Le CPU orchestre : fenêtre, événements, uniforms (caméra, scène, paramètres).
 La physique de la lumière vit dans le shader.
+
+---
+
+## Lancer le projet
+
+### Prérequis
+
+- Linux, avec un GPU + driver supportant OpenGL 4.3 Core.
+- `libsdl2-dev` et `libgl1-mesa-dev` (headers OpenGL).
+
+### Compilation
+
+```sh
+make
+```
+
+Compile `libft`, `librt`, puis l'exécutable `Space_Simulator`. Si SDL2 n'est
+pas détecté, `make` propose de lancer `./scripts/setup.sh`, qui installe les
+dépendances via `apt-get` (Debian/Ubuntu uniquement — ailleurs, installer
+l'équivalent de `libsdl2-dev`/`libgl1-mesa-dev` à la main).
+
+### Lancer
+
+```sh
+./Space_Simulator
+```
+
+### Autres cibles
+
+- `make clean` — supprime les fichiers objets.
+- `make fclean` — supprime aussi l'exécutable.
+- `make re` — recompile tout depuis zéro.
 
 ---
 
