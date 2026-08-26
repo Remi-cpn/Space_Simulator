@@ -7,28 +7,20 @@
 #include "../exit/exit.h"
 
 // Deplace/renvoie le noeud cible selon la touche recue (Tab/Entree/
-// Retour), en gardant l'etat de navigation dans des statics.
+// Retour). Grace au pointeur "parent" dans t_hud_db, ça marche a
+// n'importe quelle profondeur, plus besoin de suivre le niveau a part.
 t_hud_db	*hud_select(t_data *d, t_key key)
 {
 	static t_hud_db	*current = NULL;
-	static t_hud_db	*category = NULL;
-	static bool		in_category = false;
 
 	if (!current)
 		current = d->hud_db;
 	if (key == TAB)
 		current = current->next ? current->next : current->head;
-	else if (key == ENTER && !in_category && current->child)
-	{
-		category = current;
+	else if (key == ENTER && current->child)
 		current = current->child;
-		in_category = true;
-	}
-	else if (key == BACK && in_category)
-	{
-		current = category;
-		in_category = false;
-	}
+	else if (key == BACK && current->parent)
+		current = current->parent;
 	return (current);
 }
 
@@ -54,12 +46,14 @@ t_hud_db	*hud_new(t_data *d, char *name, t_tag tag, void *ptr)
 	return (node);
 }
 
-// Ajoute new_node en fin de la liste chainee *head, et met a jour son
-// "head" vers le premier noeud de cette liste (pour boucler au Tab).
-void	hud_append(t_hud_db **head, t_hud_db *new_node)
+// Ajoute new_node en fin de la liste chainee *head (les enfants de
+// "parent", ou les categories racine si parent vaut NULL), et met a jour
+// son "head" vers le premier noeud de cette liste (pour boucler au Tab).
+void	hud_append(t_hud_db *parent, t_hud_db **head, t_hud_db *new_node)
 {
 	t_hud_db	*last;
 
+	new_node->parent = parent;
 	if (!*head)
 	{
 		*head = new_node;
