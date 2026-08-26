@@ -33,13 +33,15 @@ int	main(int ac, char **av)
 {
 	t_data	d;
 
-	(void)ac;
-	// if (ac != 2 && ac != 3)
-	// 	return (1);
+	if (ac != 2)
+	{
+		ft_print_error((ac < 2) ? "Need file name." : "Too many args.");
+		return (1);
+	}
 
 	d = init_program();
-	parsing(&d, NULL);
-	(void)av;
+
+	parsing(&d, av[1]);
 
 	update(&d);
 

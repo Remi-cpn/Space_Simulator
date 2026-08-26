@@ -46,6 +46,7 @@
 	# define ERROR_FILE_AL_MSG "Only one ambient light needs to be defined in the file"
 	# define ERROR_FILE_AL_ARGS_MSG "Ambient light must be defined with valid arguments"
 	# define ERROR_FILE_SP_ARGS_MSG "Sphere must be defined with valid arguments"
+	# define ERROR_FILE_BH_ARGS_MSG "BlackHole must be defined with valid arguments"
 	# define ERROR_FILE_SO_ARGS_MSG "Solars must be defined with valid arguments"
 	# define ERROR_FILE_PL_ARGS_MSG "Plane must be defined with valid arguments"
 	# define ERROR_FILE_CY_ARGS_MSG "Cylinder must be defined with valid arguments"

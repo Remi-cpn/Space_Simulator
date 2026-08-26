@@ -46,7 +46,11 @@ SRC_SHADER	= shader.c
 SRC_EVENTS	= poll_events.c
 
 SRC_PARSING	= parsing.c \
-			  format/format_unique.c
+			  parsing_file.c \
+			  parsing_texture.c \
+			  utils.c \
+			  format/format_unique.c \
+			  format/format_ss.c
 
 SRC_MOVES	= camera.c
 

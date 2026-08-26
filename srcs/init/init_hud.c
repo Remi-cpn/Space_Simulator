@@ -17,13 +17,28 @@ static void	init_hud_params(t_data *d, t_hud_db *cat)
 	hud_append(&cat->child, hud_new(d, "gamma", HUD_FLOAT, &d->gamma));
 }
 
-// Enregistre dans l'arbre la masse et la position du trou noir.
+// Cherche le premier objet de type OBJ_BH dans objs[] et enregistre sa
+// masse/position dans l'arbre. Categorie laissee vide si aucun trou noir
+// n'est present dans la scene (meme garde-fou que "Objets" a nb_obj == 0).
 static void	init_hud_blackhole(t_data *d, t_hud_db *cat)
 {
-	hud_append(&cat->child, hud_new(d, "masse", HUD_FLOAT, &d->sim.bh.mass));
-	hud_append(&cat->child, hud_new(d, "pos x", HUD_DOUBLE, &d->sim.bh.pos.x));
-	hud_append(&cat->child, hud_new(d, "pos y", HUD_DOUBLE, &d->sim.bh.pos.y));
-	hud_append(&cat->child, hud_new(d, "pos z", HUD_DOUBLE, &d->sim.bh.pos.z));
+	t_object	*bh;
+	int			i;
+
+	bh = NULL;
+	i = 0;
+	while (i < d->sim.nb_obj && !bh)
+	{
+		if (d->sim.objs[i].type == OBJ_BH)
+			bh = &d->sim.objs[i];
+		i++;
+	}
+	if (!bh)
+		return ;
+	hud_append(&cat->child, hud_new(d, "masse", HUD_FLOAT, &bh->shape.bh.mass));
+	hud_append(&cat->child, hud_new(d, "pos x", HUD_DOUBLE, &bh->shape.bh.pos.x));
+	hud_append(&cat->child, hud_new(d, "pos y", HUD_DOUBLE, &bh->shape.bh.pos.y));
+	hud_append(&cat->child, hud_new(d, "pos z", HUD_DOUBLE, &bh->shape.bh.pos.z));
 }
 
 // Enregistre dans l'arbre le fov, la position et la direction de

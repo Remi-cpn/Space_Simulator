@@ -33,14 +33,6 @@ typedef struct s_input	t_input;
 typedef struct s_hud_db	t_hud_db;
 
 
-/* ——— Struct texture ——————————————————————————————————————————————————————— */
-typedef struct s_texture
-{
-	char	*path;
-	GLuint	id;
-}	t_texture;
-
-
 /* ——— Struct data —————————————————————————————————————————————————————————— */
 typedef struct s_data
 {
@@ -56,13 +48,15 @@ typedef struct s_data
 		t_texture		*tex;
 		int				tex_count;
 		int				tex_capacity;
-	t_simulation	sim;	
+	// Simulation
+		t_simulation	sim;
 	// Reglage
 		t_input			input;
 		unsigned int	nbr_ray;
 		unsigned int	wheel_coef;
 		float			exposure;
 		float			gamma;
+		bool			ss_file;
 	// Camera
 		int				cam_target;
 	// HUD
