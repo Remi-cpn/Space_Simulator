@@ -70,6 +70,9 @@ t_data	init_program(void)
 
 	init_image(&d);
 
+	// Init les structures d'objets du shader
+	init_object_buffers(&d);
+
 	// Creation du shader
 	d.program = create_compute_shader(&d, "srcs/shaders/shader.comp");
 

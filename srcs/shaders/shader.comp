@@ -26,6 +26,44 @@ uniform int		nbr_ray;
 uniform float exposure;
 uniform float gamma;
 
+// Structure Objects respectant le padding de 16bits
+struct t_gpu_sphere
+{
+	vec3	center;
+	float	radius;
+	vec4	color;
+};
+
+layout(std430, binding = 1) readonly buffer SphereBuffer
+{
+	t_gpu_sphere	spheres[];
+};
+
+struct t_gpu_ring
+{
+	vec3	center;
+	float	inner_rad;
+	vec3	normal;
+	float	outer_rad;
+	vec4	color;
+};
+
+layout(std430, binding = 2) readonly buffer RingBuffer
+{
+	t_gpu_ring	ring[];
+};
+
+struct t_gpu_sun
+{
+	vec3	center;
+	float	radius;
+	vec4	color;
+};
+
+layout(std430, binding = 3) readonly buffer SunBuffer
+{
+	t_gpu_sun	sun[];
+};
 
 /* ——— choix du pixel sur le skybox —————————————————————————————————————————————————————————— */
 

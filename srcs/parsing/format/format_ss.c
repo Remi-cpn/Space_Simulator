@@ -133,6 +133,7 @@ void	add_so(t_data *d, t_sun *s, char **l)
 		if (!double_valid(l[3]) || !double_valid(l[5]))
 			exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_SO_ARGS_MSG);
 		s->name = get_name(l[1]);
+		s->pos = get_vec(d, l[2]);
 		s->radius = ft_atod(l[3]) / 2.0;
 		s->color = get_color(d, l[4]);
 		s->intensity = ft_atod(l[5]);

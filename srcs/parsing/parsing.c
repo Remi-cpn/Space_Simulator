@@ -4,6 +4,7 @@
 
 #include "parsing.h"
 #include "../exit/exit.h"
+#include "../shaders/shader.h"
 
 static int	init_nb_obj(t_data *d, int nb_light, int nb_sun, int nb_bh,
 	int count_line)
@@ -58,8 +59,11 @@ void	parsing(t_data *d, char *file_name)
 
 	pars_file(d, file_name, d->ss_file);
 
+	// Upload des objets vers le GPU (une seule fois, scene statique pour la v2)
+	upload_sphere_buffer(d);
+	upload_ring_buffer(d);
+	upload_sun_buffer(d);
 
-	
 	// Initialisation de la structure simulation
 	init_sim(d);
 	init_hud(d);

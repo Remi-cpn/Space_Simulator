@@ -50,6 +50,10 @@ typedef struct s_data
 		int				tex_capacity;
 	// Simulation
 		t_simulation	sim;
+	// Objets GPU
+		GLuint			sphere_ssbo;
+		GLuint			ring_ssbo;
+		GLuint			sun_ssbo;
 	// Reglage
 		t_input			input;
 		unsigned int	nbr_ray;

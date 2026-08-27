@@ -41,7 +41,8 @@ SRC_DEBUG	= gl_debug.c \
 			  hud.c \
 			  hud_db.c
 
-SRC_SHADER	= shader.c
+SRC_SHADER	= shader.c \
+			  build_buffer.c
 
 SRC_EVENTS	= poll_events.c
 

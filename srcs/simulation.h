@@ -94,6 +94,7 @@ typedef struct s_blackhole
 typedef struct s_sun
 {
 	char		*name;
+	t_vec		pos;
 	//t_physics	param;
 	double		radius;
 	t_color		color;
