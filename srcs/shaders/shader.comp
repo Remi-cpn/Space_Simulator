@@ -27,9 +27,6 @@ uniform float exposure;
 uniform float gamma;
 
 // Structure Objects respectant le padding de 16bits
-// Un soleil est geometriquement une sphere -> pas de structure separee,
-// juste "emissive" pour savoir plus tard si on lui applique l'eclairage
-// (comme hit.hit == 2 en miniRT, mais porte directement dans la donnee).
 struct t_gpu_sphere
 {
 	vec3	center;
@@ -82,9 +79,9 @@ bool hit_sphere(vec3 ray_origin, vec3 ray_dir, t_gpu_sphere sph, out float t)
 		return false;
 	t = (-b - sqrt(disc)) / a;
 	// Vu qu'on test un segment et pas un ray infinie je rajoute t > 1.0
-	if (t < 0.0001 || t > 1.0)
+	if (t < 0.0 || t > 1.0)
 		t = (-b + sqrt(disc)) / a;
-	if (t < 0.001 || t > 1.0)
+	if (t < 0.0 || t > 1.0)
 		return false;
 	return (true);
 }

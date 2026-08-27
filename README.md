@@ -131,8 +131,10 @@ l'équivalent de `libsdl2-dev`/`libgl1-mesa-dev` à la main).
 
 ### Lancer
 
+Prend en argument un fichier de scène (`.ss`, ex. `data_files/test.ss`) :
+
 ```sh
-./Space_Simulator
+./Space_Simulator data_files/test.ss
 ```
 
 ### Autres cibles
@@ -279,17 +281,24 @@ newtonienne classique.
 
 > Le retour du raytracer classique, mais dans un espace courbé.
 
-- [ ] Format de scène hérité du `.rt` : sphères / planètes avec position,
-      rayon, texture ou couleur.
-- [ ] Intersection le long de la géodésique : chaque pas d'intégration est
+- [x] Format de scène : `.ss`, sphères / planètes / anneaux / soleils avec
+      nom, position, rayon, couleur, texture (chemin parsé, pas encore
+      échantillonné dans le shader).
+- [x] Intersection le long de la géodésique : chaque pas d'intégration est
       un petit segment quasi-droit → test d'intersection classique
-      segment/objet, réutilisant les maths du RT.
+      segment/objet (sphère et anneau), réutilisant les maths du RT, rejoué
+      à chaque pas RK4 dans `photon_trajectory`. Objets uploadés en SSBO
+      (scène statique pour l'instant, un seul upload au chargement).
 - [ ] Objets émissifs (soleils : couleur directe, sans éclairage) et objets
       éclairés (planètes : Phong adapté — la source vue depuis le point
-      d'impact).
-- [ ] Textures planétaires (mapping sphérique, déjà connu du RT).
-- [ ] Cas spectaculaire à valider : une planète *derrière* le trou noir,
-      visible déformée en arc.
+      d'impact). Le flag `emissive` existe déjà côté GPU (soleils taggés
+      lors du merge dans le buffer sphère) mais rien ne le lit encore : tous
+      les objets rendent en couleur plate pour l'instant.
+- [ ] Textures planétaires (mapping sphérique, déjà connu du RT) : chemin
+      parsé depuis le `.ss`, pas encore échantillonné côté shader.
+- [x] Cas spectaculaire validé : une planète/soleil derrière le trou noir
+      apparaît déformé en arc près de l'anneau de photons (confirmé
+      visuellement).
 
 **Validation :** une scène mixte — trou noir + planètes texturées + soleil —
 où les objets proches de l'horizon apparaissent distordus.
@@ -335,6 +344,17 @@ animation fluide temps réel.
 - **v2 — intersections manquées :** un pas trop grand peut « sauter »
   par-dessus un objet fin ; borner la taille du pas par la taille du plus
   petit objet proche.
+- **v2 — faux négatifs d'intersection sur la frontière entre deux pas :**
+  `hit_sphere` reprenait la garde anti-auto-intersection classique du RT
+  (`t < 0.0001` rejeté), utile quand un rayon repart *depuis* la surface
+  d'un objet (réflexion, ombre). Ici les segments testés partent d'un point
+  RK4 quelconque en plein espace, jamais d'une surface : la garde rejetait
+  des `t` valides pile à la coïncidence entre la fin d'un segment et le
+  début du suivant, laissant le rayon traverser l'objet sans le toucher sur
+  certains pixels — anneau de pixels « invisibles » autour des sphères,
+  dépendant de la distance à la caméra. Fix : garder seulement
+  `t < 0.0 || t > 1.0`, sans marge — la garde miniRT n'a pas de raison
+  d'être sur un segment qui ne part jamais d'une surface.
 - **Performance :** si le temps réel décroche, réduire la résolution interne
   et upscaler avant de toucher au pas d'intégration.
 
