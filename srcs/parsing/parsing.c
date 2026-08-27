@@ -62,7 +62,6 @@ void	parsing(t_data *d, char *file_name)
 	// Upload des objets vers le GPU (une seule fois, scene statique pour la v2)
 	upload_sphere_buffer(d);
 	upload_ring_buffer(d);
-	upload_sun_buffer(d);
 
 	// Initialisation de la structure simulation
 	init_sim(d);

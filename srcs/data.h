@@ -53,7 +53,6 @@ typedef struct s_data
 	// Objets GPU
 		GLuint			sphere_ssbo;
 		GLuint			ring_ssbo;
-		GLuint			sun_ssbo;
 	// Reglage
 		t_input			input;
 		unsigned int	nbr_ray;

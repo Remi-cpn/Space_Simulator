@@ -9,7 +9,6 @@ void	init_object_buffers(t_data *d)
 {
 	glGenBuffers(1, &d->sphere_ssbo);
 	glGenBuffers(1, &d->ring_ssbo);
-	glGenBuffers(1, &d->sun_ssbo);
 }
 
 // Envoie les uniforms de la frame courante au shader et dispatch le

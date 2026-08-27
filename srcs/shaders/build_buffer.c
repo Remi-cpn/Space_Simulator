@@ -5,37 +5,15 @@
 #include "shader.h"
 #include "../exit/exit.h"
 
-void	upload_sun_buffer(t_data *d)
-{
-	t_gpu_sun	*suns;
-	int			i;
-
-	suns = ft_calloc(d->sim.nb_sun, sizeof(t_gpu_sun));
-	if (!suns)
-		exit_prog(d, ERROR_MALLOC, ERROR_MALLOC_MSG);
-	i = 0;
-	while (i < d->sim.nb_sun)
-	{
-		suns[i].center[0] = d->sim.suns[i].pos.x;
-		suns[i].center[1] = d->sim.suns[i].pos.y;
-		suns[i].center[2] = d->sim.suns[i].pos.z;
-		suns[i].radius = (float)d->sim.suns[i].radius;
-		suns[i].color[0] = d->sim.suns[i].color.r / 255.0f;
-		suns[i].color[1] = d->sim.suns[i].color.g / 255.0f;
-		suns[i].color[2] = d->sim.suns[i].color.b / 255.0f;
-		suns[i].color[3] = 1.0f;
-		i++;
-	}
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, d->sun_ssbo);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, d->sim.nb_sun * sizeof(t_gpu_sun), suns, GL_STATIC_DRAW);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, d->sun_ssbo);
-	free(suns);
-}
-
+// Un soleil est une sphere emissive : on le range dans le meme buffer
+// que les spheres classiques (emissive = 1), a la suite. Les vraies
+// spheres sont remplies en premier (emissive = 0, deja zero via
+// ft_calloc), puis les soleils.
 void	upload_sphere_buffer(t_data *d)
 {
 	t_gpu_sphere	*spheres;
 	int				nb_sphere;
+	int				total;
 	int				i;
 	int				j;
 
@@ -46,7 +24,8 @@ void	upload_sphere_buffer(t_data *d)
 		nb_sphere += (d->sim.objs[i].type == OBJ_SPHERE);
 		i++;
 	}
-	spheres = ft_calloc(nb_sphere, sizeof(t_gpu_sphere));
+	total = nb_sphere + d->sim.nb_sun;
+	spheres = ft_calloc(total, sizeof(t_gpu_sphere));
 	if (!spheres)
 		exit_prog(d, ERROR_MALLOC, ERROR_MALLOC_MSG);
 	i = 0;
@@ -67,8 +46,23 @@ void	upload_sphere_buffer(t_data *d)
 		}
 		i++;
 	}
+	i = 0;
+	while (i < d->sim.nb_sun)
+	{
+		spheres[j].center[0] = d->sim.suns[i].pos.x;
+		spheres[j].center[1] = d->sim.suns[i].pos.y;
+		spheres[j].center[2] = d->sim.suns[i].pos.z;
+		spheres[j].radius = (float)d->sim.suns[i].radius;
+		spheres[j].color[0] = d->sim.suns[i].color.r / 255.0f;
+		spheres[j].color[1] = d->sim.suns[i].color.g / 255.0f;
+		spheres[j].color[2] = d->sim.suns[i].color.b / 255.0f;
+		spheres[j].color[3] = 1.0f;
+		spheres[j].emissive = 1;
+		i++;
+		j++;
+	}
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, d->sphere_ssbo);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, nb_sphere * sizeof(t_gpu_sphere),
+	glBufferData(GL_SHADER_STORAGE_BUFFER, total * sizeof(t_gpu_sphere),
 		spheres, GL_STATIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, d->sphere_ssbo);
 	free(spheres);

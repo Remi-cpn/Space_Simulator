@@ -27,11 +27,18 @@ uniform float exposure;
 uniform float gamma;
 
 // Structure Objects respectant le padding de 16bits
+// Un soleil est geometriquement une sphere -> pas de structure separee,
+// juste "emissive" pour savoir plus tard si on lui applique l'eclairage
+// (comme hit.hit == 2 en miniRT, mais porte directement dans la donnee).
 struct t_gpu_sphere
 {
 	vec3	center;
 	float	radius;
 	vec4	color;
+	int		emissive;
+	float	pad0;
+	float	pad1;
+	float	pad2;
 };
 
 layout(std430, binding = 1) readonly buffer SphereBuffer
@@ -53,18 +60,6 @@ layout(std430, binding = 2) readonly buffer RingBuffer
 	t_gpu_ring	ring[];
 };
 
-struct t_gpu_sun
-{
-	vec3	center;
-	float	radius;
-	vec4	color;
-};
-
-layout(std430, binding = 3) readonly buffer SunBuffer
-{
-	t_gpu_sun	sun[];
-};
-
 /* ——— choix du pixel sur le skybox —————————————————————————————————————————————————————————— */
 
 vec4 sample_skybox(vec3 direction)
@@ -75,8 +70,64 @@ vec4 sample_skybox(vec3 direction)
 	return texture(skybox, sky_uv);
 }
 
+/* ——— Calcul d'intercection ——————————————————————————————————————————————————————————————— */
+bool hit_sphere(vec3 ray_origin, vec3 ray_dir, t_gpu_sphere sph, out float t)
+{
+	vec3 oc = ray_origin - sph.center;
+	float a = dot(ray_dir, ray_dir);
+	float b = dot(ray_dir, oc);
+	float c = dot(oc, oc) - sph.radius * sph.radius;
+	float disc = b * b - a * c;
+	if (disc < 0.0)
+		return false;
+	t = (-b - sqrt(disc)) / a;
+	// Vu qu'on test un segment et pas un ray infinie je rajoute t > 1.0
+	if (t < 0.0001 || t > 1.0)
+		t = (-b + sqrt(disc)) / a;
+	if (t < 0.001 || t > 1.0)
+		return false;
+	return (true);
+}
 
-/* ——— Calcul de la trajectoire d'un photon —————————————————————————————————————————————————————————— */
+bool hit_ring(vec3 ray_origin, vec3 ray_dir, t_gpu_ring rg, out float t)
+{
+	float dir = dot(ray_dir, rg.normal);
+	if (abs(dir) < 0.0001)
+		return false;
+	t = dot(rg.center - ray_origin, rg.normal) / dir;
+	if (t < 0.0 || t > 1.0)
+		return false;
+	vec3 hit = ray_origin + t * ray_dir;
+	float diff = length(hit - rg.center);
+	return (diff >= rg.inner_rad && diff <= rg.outer_rad);
+}
+
+bool test_segment_objects(vec3 ray_origin, vec3 p1, out vec4 hit_color)
+{
+	vec3 ray_dir = p1 - ray_origin;
+	float best_t = 2.0; // > 1.0, donc "rien trouve" au depart
+	bool hit = false;
+	float t;
+
+	for (int i = 0; i < spheres.length(); i++)
+		if (hit_sphere(ray_origin, ray_dir, spheres[i], t) && t < best_t)
+		{
+			best_t = t;
+			hit_color = spheres[i].color;
+			hit = true;
+		}
+	for (int i = 0; i < ring.length(); i++)
+		if (hit_ring(ray_origin, ray_dir, ring[i], t) && t < best_t)
+		{
+			best_t = t;
+			hit_color = ring[i].color;
+			hit = true;
+		}
+	return hit;
+}
+
+
+/* ——— Calcul de la trajectoire d'un photon ———————————————————————————————————————————————— */
 /* Intégration directe en 3D (position + vitesse), pas de réduction 2D/reconstruction —
    approche "starless" (rantonels/starless), évite toute construction de base (e1/e2)
    et donc toute singularité de type produit vectoriel proche de zéro. */
@@ -159,8 +210,15 @@ vec4 photon_trajectory(vec3 dir)
 	for (int i = 0; i < steps; i++)
 	{
 		r = length(s.pos);
+		vec3 pos_prev = s.pos;
 		s = rk4_step(s, h2, bh_mass, step_size * clamp(r / rs, 0.1, 200.0));
 		r = length(s.pos);
+
+		// Objets testes en coordonnees absolues (celles du .ss), donc on
+		// retranslate le segment (relatif au trou noir) en espace monde.
+		vec4 obj_color;
+		if (test_segment_objects(pos_prev + bh_pos, s.pos + bh_pos, obj_color))
+			return obj_color;
 
 		if (r < rs)
 		{

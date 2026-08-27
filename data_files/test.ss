@@ -1,15 +1,15 @@
 
 # Obligatoire:
 A 0.1 255,255,255
-C 0,0,-20 0,-1,-0.1 70
+C 0,0,-20 0,0,1 70
 
 # SOLEIL
 # <Itentifiant> <Nom> <Position> <Rayon> <Couleur> <Intencite> <Masse> <Velocity> <Texture> <Bumpmap>
-# so NULL 0,0,0 930 255,240,200 0.8 1.0 0,0,0 texture_map/sun/sun.png NULL
+so NULL -20,0,0 10 255,240,200 0.8 1.0 0,0,0 NULL NULL
 
 # Planetes
 # <Itentifiant> <Nom> <Position> <Rayon> <Couleur> <Intencite> <Masse> <Velocity> <Texture> <Bumpmap>
-# sp Terre 10000,0,0 500 100,150,255 0 3.003e-6 0,158.0,0 texture_map/earth/earth.png NULL
+sp Terre 20,0,0 10 100,150,255 0 3.003e-6 0,158.0,0 NULL NULL
 
 # ANNEAUX (Mettre sous sa planete)
 # <Itentifiant> <Nom> <Normale> <Rayon Interrieur> <Rayon Exterieur> <Couleur> <Texture> <Bumpmap>
