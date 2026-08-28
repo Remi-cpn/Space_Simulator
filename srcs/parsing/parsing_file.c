@@ -19,6 +19,8 @@ static void	pars_line_ss(t_data *d, char *line)
 		add_al(d, line_split);
 	else if (!ft_strncmp(line_split[0], "C", 2))
 		add_cam(d, line_split);
+	else if (!ft_strncmp(line_split[0], "L", 2))
+ 		add_light(d, line_split);
 	else if (!ft_strncmp(line_split[0], "so", 3))
 		add_so(d, &d->sim.suns[j++], line_split);
 	else if (!ft_strncmp(line_split[0], "bh", 3))

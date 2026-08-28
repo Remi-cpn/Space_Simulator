@@ -9,6 +9,7 @@ void	init_object_buffers(t_data *d)
 {
 	glGenBuffers(1, &d->sphere_ssbo);
 	glGenBuffers(1, &d->ring_ssbo);
+	glGenBuffers(1, &d->light_ssbo);
 }
 
 // Envoie les uniforms de la frame courante au shader et dispatch le
@@ -35,6 +36,10 @@ void	params_gl(t_data *d)
 		glUniform1i(glGetUniformLocation(d->program, "nbr_ray"), d->nbr_ray);
 		glUniform1f(glGetUniformLocation(d->program, "exposure"), d->exposure);
 		glUniform1f(glGetUniformLocation(d->program, "gamma"), d->gamma);
+		glUniform1i(glGetUniformLocation(d->program, "nbr_light"), d->sim.nb_light);
+		glUniform1f(glGetUniformLocation(d->program, "shadow_dist"), d->sim.shadow_dist);
+		glUniform3f(glGetUniformLocation(d->program, "ambient_color"), d->sim.ambient.r / 255.0f, d->sim.ambient.g / 255.0f, d->sim.ambient.b / 255.0f);
+		glUniform1f(glGetUniformLocation(d->program, "ambient_ratio"), d->sim.ambient_ratio);
 
 
 		// Dispatch un peu comme du multi threading

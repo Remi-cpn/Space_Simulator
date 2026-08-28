@@ -38,4 +38,5 @@ void	calcul_viewport(t_camera *cam, double ratio)
 void	init_sim(t_data *d)
 {
 	calcul_viewport(&(d->sim.cam), (double)d->win_w / (double)d->win_h);
+	d->sim.shadow_dist = SHADOW_DIST;
 }

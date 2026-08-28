@@ -55,10 +55,10 @@ static void	rotate_movement(t_data *d, t_camera *cam, double speed_init)
 				vec_mult_scalar(cam->ver_n, -sin(speed)));
 	if (d->input.left == true)
 		cam->dir = vec_add(vec_mult_scalar(cam->dir, cos(speed)),
-				vec_mult_scalar(cam->hor_n, -sin(speed)));
+				vec_mult_scalar(cam->hor_n, sin(speed)));
 	else if (d->input.right == true)
 		cam->dir = vec_add(vec_mult_scalar(cam->dir, cos(speed)),
-				vec_mult_scalar(cam->hor_n, sin(speed)));
+				vec_mult_scalar(cam->hor_n, -sin(speed)));
 	vec_normalize(&(cam->dir));
 }
 
@@ -72,9 +72,9 @@ static void	linear_movement(t_data *d, t_camera *cam, double speed)
 	if (d->input.s == true)
 		cam->origin = vec_add(cam->origin, vec_mult_scalar(cam->dir, -speed));
 	if (d->input.a == true)
-		cam->origin = vec_add(cam->origin, vec_mult_scalar(cam->hor_n, -speed));
-	if (d->input.d == true)
 		cam->origin = vec_add(cam->origin, vec_mult_scalar(cam->hor_n, speed));
+	if (d->input.d == true)
+		cam->origin = vec_add(cam->origin, vec_mult_scalar(cam->hor_n, -speed));
 	if (d->input.ctrl == true)
 		cam->origin = vec_add(cam->origin, vec_mult_scalar(cam->ver_n, -speed));
 	if (d->input.space == true)

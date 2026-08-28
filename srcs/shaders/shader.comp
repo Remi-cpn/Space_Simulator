@@ -2,6 +2,8 @@
 
 #define GOLDEN_NBR_X 0.754877666
 #define GOLDEN_NBR_Y 0.569840296
+#define SHINY 32
+#define KS 0.5
 
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(binding = 0, rgba8) uniform image2D outImg;
@@ -22,9 +24,15 @@ uniform float	step_size;	// h
 // Rayon par pixels
 uniform int		nbr_ray;
 
+// Lumiere
+uniform vec3	ambient_color;
+uniform float 	ambient_ratio;
+uniform int		nbr_light;
+uniform float	shadow_dist;
+
 // Rendu viseul
-uniform float exposure;
-uniform float gamma;
+uniform float 	exposure;
+uniform float 	gamma;
 
 // Structure Objects respectant le padding de 16bits
 struct t_gpu_sphere
@@ -33,7 +41,7 @@ struct t_gpu_sphere
 	float	radius;
 	vec4	color;
 	int		emissive;
-	float	pad0;
+	float	intensity; // soleil uniquement (source de lumiere)
 	float	pad1;
 	float	pad2;
 };
@@ -57,7 +65,20 @@ layout(std430, binding = 2) readonly buffer RingBuffer
 	t_gpu_ring	ring[];
 };
 
-/* ——— choix du pixel sur le skybox —————————————————————————————————————————————————————————— */
+struct t_gpu_light
+{
+	vec3	center;
+	float	intensity;
+	vec4	color;
+};
+
+layout(std430, binding = 3) readonly buffer LightBuffer
+{
+	t_gpu_light light[];
+};
+
+
+/* ——— Skybox ———————————————————————————————————————————————————————————————————————————— */
 
 vec4 sample_skybox(vec3 direction)
 {
@@ -67,8 +88,14 @@ vec4 sample_skybox(vec3 direction)
 	return texture(skybox, sky_uv);
 }
 
+
+
 /* ——— Calcul d'intercection ——————————————————————————————————————————————————————————————— */
-bool hit_sphere(vec3 ray_origin, vec3 ray_dir, t_gpu_sphere sph, out float t)
+
+#define OBJ_TYPE_SPHERE 0
+#define OBJ_TYPE_RING   1
+
+bool hit_sphere(vec3 ray_origin, vec3 ray_dir, t_gpu_sphere sph, float t_max, out float t)
 {
 	vec3 oc = ray_origin - sph.center;
 	float a = dot(ray_dir, ray_dir);
@@ -78,50 +105,198 @@ bool hit_sphere(vec3 ray_origin, vec3 ray_dir, t_gpu_sphere sph, out float t)
 	if (disc < 0.0)
 		return false;
 	t = (-b - sqrt(disc)) / a;
-	// Vu qu'on test un segment et pas un ray infinie je rajoute t > 1.0
-	if (t < 0.0 || t > 1.0)
+	// Vu qu'on test un segment et pas un ray infinie je rajoute t > t_max
+	if (t < 0.0 || t > t_max)
 		t = (-b + sqrt(disc)) / a;
-	if (t < 0.0 || t > 1.0)
+	if (t < 0.0 || t > t_max)
 		return false;
 	return (true);
 }
 
-bool hit_ring(vec3 ray_origin, vec3 ray_dir, t_gpu_ring rg, out float t)
+bool hit_ring(vec3 ray_origin, vec3 ray_dir, t_gpu_ring rg, float t_max, out float t)
 {
 	float dir = dot(ray_dir, rg.normal);
 	if (abs(dir) < 0.0001)
 		return false;
 	t = dot(rg.center - ray_origin, rg.normal) / dir;
-	if (t < 0.0 || t > 1.0)
+	if (t < 0.0 || t > t_max)
 		return false;
 	vec3 hit = ray_origin + t * ray_dir;
 	float diff = length(hit - rg.center);
 	return (diff >= rg.inner_rad && diff <= rg.outer_rad);
 }
 
-bool test_segment_objects(vec3 ray_origin, vec3 p1, out vec4 hit_color)
+// Test commun sphere/anneau, reutilise pour un segment (t_max = 1.0) comme
+// pour un rayon d'ombre (t_max = distance a la lumiere) : ne renvoie que
+// l'objet le plus proche trouve, jamais sa couleur (calculee plus tard,
+// une seule fois, par l'appelant).
+// skip_emissive : ignore les soleils (comme minirt, qui ne teste les
+// soleils que si flag_dist == 0) -- un rayon d'ombre ne doit jamais se
+// faire bloquer par le soleil qu'il vise ou par un autre soleil.
+bool check_hit(vec3 ray_origin, vec3 ray_dir, float t_max, bool skip_emissive,
+		out float best_t, out int type, out int index)
 {
-	vec3 ray_dir = p1 - ray_origin;
-	float best_t = 2.0; // > 1.0, donc "rien trouve" au depart
-	bool hit = false;
-	float t;
+	bool	hit;
+	float	t;
 
+	best_t = t_max + 1.0; // > t_max, donc "rien trouve" au depart
+	hit = false;
 	for (int i = 0; i < spheres.length(); i++)
-		if (hit_sphere(ray_origin, ray_dir, spheres[i], t) && t < best_t)
+		if (!(skip_emissive && spheres[i].emissive == 1)
+			&& hit_sphere(ray_origin, ray_dir, spheres[i], t_max, t) && t < best_t)
 		{
 			best_t = t;
-			hit_color = spheres[i].color;
+			type = OBJ_TYPE_SPHERE;
+			index = i;
 			hit = true;
 		}
 	for (int i = 0; i < ring.length(); i++)
-		if (hit_ring(ray_origin, ray_dir, ring[i], t) && t < best_t)
+		if (hit_ring(ray_origin, ray_dir, ring[i], t_max, t) && t < best_t)
 		{
 			best_t = t;
-			hit_color = ring[i].color;
+			type = OBJ_TYPE_RING;
+			index = i;
 			hit = true;
 		}
-	return hit;
+	return (hit);
 }
+
+vec4 get_hit_color(int type, int index)
+{
+	if (type == OBJ_TYPE_SPHERE)
+		return (spheres[index].color);
+	return (ring[index].color);
+}
+
+vec3 get_hit_normal(vec3 hit_point, int type, int index)
+{
+	if (type == OBJ_TYPE_SPHERE)
+		return (normalize(hit_point - spheres[index].center));
+	return (ring[index].normal);
+}
+
+
+
+/* ——— Light manager —————————————————————————————————————————————————————————————————————— */
+float shadow_ray(vec3 hit_pos, vec3 hit_normal, vec3 light_dir, float light_norm)
+{
+	float	shadow;
+	vec3	origin;
+	float	best_t;
+	int		type;
+	int		index;
+	vec4	color;
+
+	shadow = 0.0;
+	origin = hit_pos + hit_normal * 0.01;
+	while (shadow < 1.0)
+	{
+		if (!check_hit(origin, light_dir, min(light_norm, shadow_dist), true,
+				best_t, type, index)
+			|| best_t <= 0.0)
+			break;
+		color = get_hit_color(type, index);
+		shadow += (1.0 - shadow) * color.a;
+		// On avance jusqu'au point d'impact trouve (pas jusqu'a hit_pos) :
+		// sinon on retombe indefiniment sur le meme obstacle.
+		origin = origin + best_t * light_dir + light_dir * 0.001;
+	}
+	return (shadow);
+}
+
+// Calcul partage pour une source ponctuelle, qu'elle vienne du buffer
+// lumiere (light[]) ou d'un soleil (spheres[] avec emissive == 1) --
+// meme principe que calc_one_light dans minirt (light_calc_bonus.c),
+// appelee depuis les deux boucles de light_manager.
+void accumulate_light(vec3 hit_pos, vec3 hit_normale, vec3 light_pos,
+		vec3 light_color, float light_intensity,
+		inout vec3 diffuse, inout vec3 specular)
+{
+	vec3 light_dir = light_pos - hit_pos;
+	float light_norm = length(light_dir);
+	light_dir = normalize(light_dir);
+	float coef_dif = dot(hit_normale, light_dir);
+	// Dans minirt j'ai du gere un cas particulier pour ring ici
+	//if (hit->object->type == OBJ_RING)
+	//ctx.coef_d = fabs(ctx.coef_d);
+	if (coef_dif > 0.0)
+	{
+		// Application de la lumiere
+		float shadow = shadow_ray(hit_pos, hit_normale, light_dir, light_norm);
+
+		//Diffuse
+		float factor = coef_dif * light_intensity * (1.0 - shadow);
+		diffuse += light_color * factor;
+
+		// Specular
+		vec3 reflects = normalize(hit_normale * 2.0 * coef_dif - light_dir);
+		vec3 view_dir = normalize(cam_origin - hit_pos);
+		float coef_spec = dot(reflects, view_dir);
+		if (coef_spec > 0.001)
+		{
+			coef_spec = pow(coef_spec, SHINY) * KS * light_intensity * (1.0 - shadow);
+			specular += light_color * coef_spec;
+		}
+	}
+}
+
+vec4 light_manager(vec3 hit_pos, vec3 hit_normale, vec4 base_color)
+{
+	vec3 diffuse = vec3(0, 0, 0);
+	vec3 ambient = vec3(0, 0, 0) + ambient_color * ambient_ratio;
+	vec3 specular = vec3(0, 0, 0);
+
+	// Boucle sur les lights
+	for (int i = 0; i < nbr_light; ++i)
+		accumulate_light(hit_pos, hit_normale, light[i].center,
+			light[i].color.rgb, light[i].intensity, diffuse, specular);
+
+	// Boucle sur les soleils
+	for (int i = 0; i < spheres.length(); ++i)
+		if (spheres[i].emissive == 1)
+			accumulate_light(hit_pos, hit_normale, spheres[i].center,
+				spheres[i].color.rgb, spheres[i].intensity, diffuse, specular);
+
+	// Set light
+	vec3 light_color = ambient + diffuse + specular;
+	if (light_color.r > 1.0)
+		light_color.r = 1.0;
+	if (light_color.g > 1.0)
+		light_color.g = 1.0;
+	if (light_color.b > 1.0)
+		light_color.b = 1.0;
+
+	base_color.rgb = base_color.rgb * light_color.rgb;
+
+	return (base_color);
+}
+
+
+
+/* ——— Test des objets touches le long d'un segment ——————————————————————————————————————— */
+bool test_segment_objects(vec3 ray_origin, vec3 ray_dir, out vec4 hit_color)
+{
+	float	best_t;
+	int		type;
+	int		index;
+	vec3	hit_point;
+	vec3	normal;
+
+	if (!check_hit(ray_origin, ray_dir, 1.0, false, best_t, type, index))
+		return false;
+	hit_point = ray_origin + best_t * ray_dir;
+	if (type == OBJ_TYPE_SPHERE && spheres[index].emissive == 1)
+		hit_color = get_hit_color(type, index);
+	else
+	{
+		normal = get_hit_normal(hit_point, type, index);
+		hit_color = light_manager(hit_point, normal, get_hit_color(type, index));
+	}
+	return true;
+}
+
+
+
 
 
 /* ——— Calcul de la trajectoire d'un photon ———————————————————————————————————————————————— */
@@ -214,7 +389,8 @@ vec4 photon_trajectory(vec3 dir)
 		// Objets testes en coordonnees absolues (celles du .ss), donc on
 		// retranslate le segment (relatif au trou noir) en espace monde.
 		vec4 obj_color;
-		if (test_segment_objects(pos_prev + bh_pos, s.pos + bh_pos, obj_color))
+		vec3 ray_dir = s.pos - pos_prev;
+		if (test_segment_objects(pos_prev + bh_pos, ray_dir, obj_color))
 			return obj_color;
 
 		if (r < rs)
@@ -251,11 +427,18 @@ void main()
 	{
 		vec2	offset = fract(vec2(i) * vec2(GOLDEN_NBR_X, GOLDEN_NBR_Y));
 		vec2	uv = (vec2(pixel) + offset) * inv_size;
+		// Miroir horizontal : hor_n (cross(dir, up)) donne +x a gauche pour
+		// dir = (0,0,1) -- corrige ici, au point a sens unique pixel->rayon,
+		// jamais dans calcul_viewport (reutilise par les controles/la
+		// continuite d'une frame a l'autre, voir "Pieges connus").
+		uv.x = 1.0 - uv.x;
 		vec3	dir = normalize(cam_corner + uv.x * cam_hor + uv.y * cam_ver - cam_origin);
 		color += photon_trajectory(dir);
 	}
 
+	// Gamma
 	color = color / nbr_ray;
 	color.rgb = pow(color.rgb * exposure, vec3(1.0 / gamma));
+
 	imageStore(outImg, pixel, color);
 }

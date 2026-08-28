@@ -15,13 +15,20 @@
 #include "../data.h"
 
 /* ——— Struct GPU ——————————————————————————————————————————————————————————— */
+typedef struct s_gpu_light
+{
+	float	center[3];
+	float	intensity;
+	float	color[4];
+}	t_gpu_light;
+
 typedef struct s_gpu_sphere
 {
 	float	center[3];
 	float	radius;
 	float	color[4];
 	int		emissive;
-	float	pad0;
+	float	intensity;
 	float	pad1;
 	float	pad2;
 }	t_gpu_sphere;
@@ -43,5 +50,6 @@ void	params_gl(t_data *d);
 void	init_object_buffers(t_data *d);
 void	upload_sphere_buffer(t_data *d);
 void	upload_ring_buffer(t_data *d);
+void	upload_light_buffer(t_data *d);
 
 #endif

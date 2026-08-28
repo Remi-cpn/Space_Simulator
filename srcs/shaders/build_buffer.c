@@ -58,6 +58,7 @@ void	upload_sphere_buffer(t_data *d)
 		spheres[j].color[2] = d->sim.suns[i].color.b / 255.0f;
 		spheres[j].color[3] = 1.0f;
 		spheres[j].emissive = 1;
+		spheres[j].intensity = (float)d->sim.suns[i].intensity;
 		i++;
 		j++;
 	}
@@ -117,4 +118,34 @@ void	upload_ring_buffer(t_data *d)
 		rings, GL_STATIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, d->ring_ssbo);
 	free(rings);
+}
+
+// Couleurs pre-normalisees en C (/255.0f), meme convention que les
+// spheres/anneaux : rien ne divise plus par 255 cote shader.
+void	upload_light_buffer(t_data *d)
+{
+	t_gpu_light	*lights;
+	int			i;
+
+	lights = ft_calloc(d->sim.nb_light, sizeof(t_gpu_light));
+	if (!lights)
+		exit_prog(d, ERROR_MALLOC, ERROR_MALLOC_MSG);
+	i = 0;
+	while (i < d->sim.nb_light)
+	{
+		lights[i].center[0] = d->sim.lights[i].position.x;
+		lights[i].center[1] = d->sim.lights[i].position.y;
+		lights[i].center[2] = d->sim.lights[i].position.z;
+		lights[i].intensity = (float)d->sim.lights[i].intensity;
+		lights[i].color[0] = d->sim.lights[i].color.r / 255.0f;
+		lights[i].color[1] = d->sim.lights[i].color.g / 255.0f;
+		lights[i].color[2] = d->sim.lights[i].color.b / 255.0f;
+		lights[i].color[3] = 1.0f;
+		i++;
+	}
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, d->light_ssbo);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, d->sim.nb_light * sizeof(t_gpu_light),
+		lights, GL_STATIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, d->light_ssbo);
+	free(lights);
 }

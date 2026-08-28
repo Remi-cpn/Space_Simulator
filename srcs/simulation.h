@@ -14,6 +14,10 @@
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
 # include "../library/librt/librt.h"
 
+/* ——— DEFINE     ——————————————————————————————————————————————————————————— */
+# define RENDER_DIST 5000.0
+# define SHADOW_DIST 2000.0
+
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
 typedef struct s_data		t_data;
@@ -180,6 +184,8 @@ typedef struct	s_simulation
 		double		ambient_ratio;
 	// SkyBox
 		t_skybox	sky;
+	// Reglage
+		float		shadow_dist;
 }	t_simulation;
 
 

@@ -2,6 +2,7 @@
 # Obligatoire:
 A 0.1 255,255,255
 C 0,0,-20 0,0,1 70
+L NULL 0,30,0 0.8 255,255,255
 
 # SOLEIL
 # <Itentifiant> <Nom> <Position> <Rayon> <Couleur> <Intencite> <Masse> <Velocity> <Texture> <Bumpmap>
