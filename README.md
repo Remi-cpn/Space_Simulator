@@ -27,6 +27,7 @@ l'intégration numérique de trajectoires.
 - [Contrôles](#contrôles)
 - [Rendu par shaders](#rendu-par-shaders)
 - [Théorie](#théorie)
+- [Éclairage](#éclairage)
 - [Roadmap](#roadmap)
 - [Pièges connus](#pièges-connus)
 - [Dette technique](#dette-technique--à-retravailler-plus-tard)
@@ -275,6 +276,78 @@ newtonienne classique.
 
 ---
 
+## Éclairage
+
+### Phong, pour les objets non-émissifs
+
+Un soleil rend sa couleur directement (aucun calcul de lumière — c'est une
+source, pas une surface éclairée). Tout le reste (planètes, anneaux) suit un
+modèle de Phong classique : ambiante + diffuse (loi de Lambert, l'angle
+entre la normale et la direction du soleil) + spéculaire (reflet concentré,
+angle entre le rayon réfléchi et la caméra). Rien d'exotique — les mêmes
+maths que le RT classique, appliquées au point d'impact trouvé le long de la
+géodésique plutôt qu'au point d'impact d'un rayon droit.
+
+### Ombre douce analytique (soleil comme source étendue)
+
+Premier essai, naïf : traiter le soleil comme un point light exact (sa
+position, sans épaisseur). Problème visible immédiatement sur une scène à
+plusieurs planètes — un unique rayon d'ombre tiré vers le centre du soleil
+donne une ombre tout-ou-rien : un petit objet suffisait à éteindre
+complètement la lumière de tout le système dès qu'il passait entre un point
+et le centre exact du soleil, même à des années-lumière de distance de ce
+point. Le soleil est une **source étendue** (un disque, pas un point) — un
+petit objet ne devrait bloquer qu'une fraction de sa surface visible, donc
+assombrir, pas éteindre.
+
+Deuxième essai : échantillonner un point aléatoire différent sur le disque
+du soleil à chaque rayon de supersampling (`nbr_ray`), moyenner. Ça marche
+en théorie, mais `nbr_ray` est plafonné à 5 dans le HUD — largement
+insuffisant pour lisser une pénombre qui peut couvrir plusieurs dizaines de
+degrés dans une scène aux proportions resserrées (voir plus bas) : le
+résultat était un bord d'ombre par "morceaux" superposés, pas un dégradé.
+
+Solution retenue : une formule **analytique**, sans tirage aléatoire ni
+lancer de rayon, inspirée de la méthode d'Orion Sky Lawlor pour les ombres
+douces sphère-sur-sphère. L'idée : comparer des **angles**, vus depuis le
+point éclairé, plutôt que chercher une intersection.
+
+- `angle_soleil = asin(rayon_soleil / distance_soleil)` — taille angulaire
+  apparente du soleil.
+- `angle_occulteur = asin(rayon_occulteur / distance_occulteur)` — taille
+  angulaire apparente de l'obstacle potentiel.
+- `angle_sep` — l'écart angulaire entre la direction du soleil et celle de
+  l'obstacle.
+- `d = distance_soleil × (angle_sep − angle_occulteur)` — à quel point le
+  bord de l'obstacle est loin du centre du soleil, converti en unité de
+  longueur à la distance du soleil.
+- `ombre = smoothstep(-1, 1, -d / rayon_soleil)` — le facteur d'ombre final
+  (0 = pleine lumière, 1 = ombre totale), avec une transition douce entre
+  les deux.
+
+Le dégradé rond vient directement de cette géométrie (deux disques, projetés
+en angle, qui se recouvrent progressivement) — aucun bruit, un bord net dès
+`nbr_ray = 1`. Implémentée dans `sphere_light_shadow`/`accumulate_sun_light`
+(`shader.comp`) ; les lumières ponctuelles classiques (`L` dans le `.ss`)
+gardent le lancer de rayon d'origine (`shadow_ray`), pas de notion de disque
+pour un point light.
+
+Limites actuelles : seuls les occulteurs **sphériques** sont gérés (pas les
+anneaux) ; si plusieurs objets occultent partiellement le même soleil, seule
+l'ombre la plus forte est retenue (`max`), pas une vraie union des zones
+occultées — négligeable tant qu'un seul obstacle significatif est présent à
+la fois, ce qui couvre l'immense majorité des scènes.
+
+La largeur de la pénombre est directement proportionnelle au rayon *réel*
+du soleil (`rayon_soleil` dans la formule) — une scène où le soleil est
+gros et proche des planètes (choix esthétique pour rester lisible à
+l'écran, voir `data_files/solar_system.ss`) produit donc une pénombre
+proportionnellement large, pas un défaut de la formule. Comparer avec
+`data_files/eclipse_test.ss` (soleil petit et loin) pour voir un bord net,
+comparable à une vraie ombre d'éclipse.
+
+---
+
 ## Roadmap
 
 ### v2 — Intégration du RT : les objets entrent en scène
@@ -289,11 +362,10 @@ newtonienne classique.
       segment/objet (sphère et anneau), réutilisant les maths du RT, rejoué
       à chaque pas RK4 dans `photon_trajectory`. Objets uploadés en SSBO
       (scène statique pour l'instant, un seul upload au chargement).
-- [ ] Objets émissifs (soleils : couleur directe, sans éclairage) et objets
-      éclairés (planètes : Phong adapté — la source vue depuis le point
-      d'impact). Le flag `emissive` existe déjà côté GPU (soleils taggés
-      lors du merge dans le buffer sphère) mais rien ne le lit encore : tous
-      les objets rendent en couleur plate pour l'instant.
+- [x] Objets émissifs (soleils : couleur directe, sans éclairage) et objets
+      éclairés (planètes : Phong — ambiante + diffuse + spéculaire, calculé
+      au point d'impact). Ombre douce analytique pour les soleils (voir
+      [Éclairage](#éclairage)) plutôt qu'un point light tout-ou-rien.
 - [ ] Textures planétaires (mapping sphérique, déjà connu du RT) : chemin
       parsé depuis le `.ss`, pas encore échantillonné côté shader.
 - [x] Cas spectaculaire validé : une planète/soleil derrière le trou noir
@@ -357,6 +429,14 @@ animation fluide temps réel.
   d'être sur un segment qui ne part jamais d'une surface.
 - **Performance :** si le temps réel décroche, réduire la résolution interne
   et upscaler avant de toucher au pas d'intégration.
+- **Anneaux mal éclairés (normale à sens unique) :** un anneau a deux faces,
+  mais `ring.normal` ne pointe que d'un côté. `coef_dif = dot(normale,
+  direction_soleil)` peut donc être négatif pour la face pourtant visible
+  par la caméra, si `normal` pointe à l'opposé du soleil — l'anneau ne
+  reçoit alors que l'ambiante (quasi noir). Déjà repéré en commentaire dans
+  `accumulate_light`/`accumulate_sun_light` (`shader.comp`) ; fix identifié
+  mais pas encore appliqué : `abs(coef_dif)` quand l'objet touché est un
+  anneau.
 
 ## Dette technique — à retravailler plus tard
 

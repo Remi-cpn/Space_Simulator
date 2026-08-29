@@ -6,14 +6,14 @@
 # rien courber ni se voir.
 
 # Obligatoire:
-A 0.15 255,255,255
+A 0 255,255,255
 C 190,80,-350 0,-0.148,0.989 80
 
 # SOLEIL
 # <Itentifiant> <Nom> <Position> <Rayon> <Couleur> <Intencite> <Masse> <Velocity> <Texture> <Bumpmap>
 so Soleil 0,0,0 40 255,230,140 1.0 1.0 0,0,0 assets/textures/sun/sun.png NULL
 
-# Planetes
+# Planetes 
 # <Itentifiant> <Nom> <Position> <Rayon> <Couleur> <RotationSpeed> <Masse> <Velocity> <Texture> <Bumpmap>
 sp Mercure 60,0,0 6 170,169,173 0 1.0e-7 0,0,0 assets/textures/mercury/mercury.png NULL
 sp Venus 90,0,0 9 230,200,140 0 2.0e-7 0,0,0 assets/textures/venus/venus_surface.png NULL
