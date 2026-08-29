@@ -6,7 +6,7 @@
 #include "../parsing/parsing.h"
 
 // Construit la base orthonormee de la camera (hor_n/ver_n) et le coin
-// du viewport, a partir de dir/fov — meme maths que le RT.
+// du viewport, a partir de dir/fov.
 void	calcul_viewport(t_camera *cam, double ratio)
 {
 	double				fov_rad;
