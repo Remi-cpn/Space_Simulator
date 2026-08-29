@@ -158,6 +158,7 @@ Prend en argument un fichier de scène (`.ss`, ex. `data_files/test.ss`) :
 | `Entrée`            | Rentre dans la catégorie ciblée           |
 | `Retour arrière`    | Ressort de la catégorie courante          |
 | Molette souris      | Ajuste la valeur ciblée dans le HUD — le pas grandit avec le défilement continu (coefficient de vitesse `coef molette`, 1 à 5, lui-même visible/réglable dans le HUD) |
+| `R`                 | Recharge la scene apres deplacement des objects de la scene depuis le HUD |
 | `Échap`             | Quitter                                   |
 
 ### HUD de debug (terminal)

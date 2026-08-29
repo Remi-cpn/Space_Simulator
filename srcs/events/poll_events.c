@@ -5,6 +5,7 @@
 #include "events.h"
 #include "../data.h"
 #include "../debug/debug.h"
+#include "../shaders/shader.h"
 
 // Met a jour les booleens de deplacement/HUD selon la touche recue,
 // et reimprime le HUD si une action HUD a change quelque chose.
@@ -36,6 +37,17 @@ static bool	set_input(t_data *d, t_input *input, int scancode, bool value, int f
 		case ENTER : if (value) h = hud_select(d, ENTER); break;
 		case BACK : if (value) h = hud_select(d, BACK); break;
 		case TAB : if (value) h = hud_select(d, TAB); break;
+
+		// Repousse l'etat CPU courant (deja modifie par le HUD) vers les
+		// buffers GPU -- pas un reparse du fichier, juste une resynchro.
+		case _R : if (value)
+			{
+				upload_sphere_buffer(d);
+				upload_ring_buffer(d);
+				upload_light_buffer(d);
+				upload_blackhole_buffer(d);
+			}
+			break;
 
 		case ESC : return false;
 
