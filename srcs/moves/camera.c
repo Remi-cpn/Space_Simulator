@@ -5,14 +5,6 @@
 #include "../data.h"
 #include "../simulation.h"
 
-// void	reparse(t_data *d)
-// {
-// 	free(d->sim.objects);
-// 	d->sim.objects = NULL;
-// 	d->sim.nb_obj = 0;
-// 	d->sim = parsing(d, d->filename);
-// 	d->input.r = false;
-// }
 
 // static bool	update_cam_orbit(t_data *d, double speed)
 // {
@@ -31,8 +23,6 @@
 // 		snap_cam_to_planet(d, +1);
 // 	else if (d->input.p == true)
 // 		snap_cam_to_planet(d, -1);
-// 	else if (d->input.r == true)
-// 		reparse(d);
 // 	else
 // 		return (false);
 // 	follow_cam(d);

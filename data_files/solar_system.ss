@@ -5,7 +5,8 @@
 
 # Obligatoire:
 A 0 255,255,255
-C -25.74,128.82,-300.21 -0.05,-0.41,0.91 80
+#C -25.74,128.82,-300.21 -0.05,-0.41,0.91 80
+C 65.91,8.18,-50.04 0.52,-0.34,0.78 80
 
 # SOLEIL
 # <Itentifiant> <Nom> <Position> <Diametre> <Couleur> <Shininess> <Intencite> <Masse> <Velocity> <Texture> <Bumpmap>

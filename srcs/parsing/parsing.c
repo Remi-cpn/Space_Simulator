@@ -25,8 +25,8 @@ static int	init_nb_obj(t_data *d, int nb_light, int nb_sun, int nb_bh,
 
 static int	check_file_name(t_data *d, char *file_name)
 {
-	if (check_extention(file_name, ".rt") == true)
-		return (1);
+	// if (check_extention(file_name, ".rt") == true)
+	// 	return (1);
 	if (check_extention(file_name, ".ss") == true)
 	{
 		d->ss_file = true;

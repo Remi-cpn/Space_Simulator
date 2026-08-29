@@ -491,6 +491,22 @@ deviendra bloquant (pas des bugs à corriger dans l'immédiat).
   même résolution à toutes les textures — mauvais si une scène mélange une
   grosse planète et une petite lune).
 
+- **Aliasing de texture aux silhouettes (pas de mipmapping) :** `texture()`
+  dans un compute shader n'a pas accès aux dérivées d'écran implicites
+  (contrairement au fragment shader, qui les calcule en évaluant des quads de
+  2×2 pixels) — impossible donc de choisir automatiquement un mip level.
+  Chaque échantillon retombe toujours sur le mip 0, quelle que soit la
+  distance ou l'angle d'incidence. Symptôme observé : motif « en escalier »
+  crénelé, spécifiquement sur les objets texturés, à la jonction entre deux
+  sphères où l'UV varie très vite d'un pixel à l'autre (silhouette d'une
+  planète lointaine derrière une planète proche) — confirmé en comparant la
+  même scène avec/sans texture (lisse sans, crénelé avec) et en forçant
+  `textureLod(..., 0.0)` explicitement (aucun changement, preuve que c'était
+  déjà le comportement par défaut). Vraie solution : ray differentials ou ray
+  cones (calculer une empreinte UV approximative par pixel à partir de la
+  distance parcourue, puis choisir un mip level explicite) — pas implémenté
+  pour l'instant.
+
 ## Références à consulter
 
 - Textures : NASA SVS *Deep Star Maps* (domaine public) ; textures
