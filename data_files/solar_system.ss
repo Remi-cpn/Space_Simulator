@@ -30,7 +30,3 @@ sp Uranus 330,0,0 14 150,220,230 0 4.4e-5 0,0,0 assets/textures/uranus/uranus.pn
 ri AnneauUranus 0.1,1,0 9 13 180,220,225 NULL NULL
 
 sp Neptune 380,0,0 13 80,110,230 0 5.2e-5 0,0,0 assets/textures/neptune/neptune.png NULL
-
-# Trou noir
-# <Itentifiant> <Nom> <Position> <Masse>
-bh Discret 0,-5000,0 0.0001

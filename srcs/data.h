@@ -54,6 +54,7 @@ typedef struct s_data
 		GLuint			sphere_ssbo;
 		GLuint			ring_ssbo;
 		GLuint			light_ssbo;
+		GLuint			blackhole_ssbo;
 	// Reglage
 		t_input			input;
 		unsigned int	nbr_ray;

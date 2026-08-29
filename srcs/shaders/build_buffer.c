@@ -149,3 +149,30 @@ void	upload_light_buffer(t_data *d)
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, d->light_ssbo);
 	free(lights);
 }
+
+// Stockage complet (0, 1 ou N trous noirs) meme si, pour l'instant, seul
+// blackholes[0] courbe reellement la trajectoire cote shader (voir
+// photon_trajectory / "Dette technique").
+void	upload_blackhole_buffer(t_data *d)
+{
+	t_gpu_blackhole	*bh;
+	int				i;
+
+	bh = ft_calloc(d->sim.nb_bh, sizeof(t_gpu_blackhole));
+	if (!bh)
+		exit_prog(d, ERROR_MALLOC, ERROR_MALLOC_MSG);
+	i = 0;
+	while (i < d->sim.nb_bh)
+	{
+		bh[i].center[0] = d->sim.blackholes[i].pos.x;
+		bh[i].center[1] = d->sim.blackholes[i].pos.y;
+		bh[i].center[2] = d->sim.blackholes[i].pos.z;
+		bh[i].mass = d->sim.blackholes[i].mass;
+		i++;
+	}
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, d->blackhole_ssbo);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, d->sim.nb_bh * sizeof(t_gpu_blackhole),
+		bh, GL_STATIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, d->blackhole_ssbo);
+	free(bh);
+}

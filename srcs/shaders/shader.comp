@@ -4,6 +4,7 @@
 #define GOLDEN_NBR_Y 0.569840296
 #define SHINY 32
 #define KS 0.5
+#define RENDER_DIST 5000.0
 
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(binding = 0, rgba8) uniform image2D outImg;
@@ -16,8 +17,6 @@ uniform vec3 	cam_hor;
 uniform vec3 	cam_ver;
 
 // Black Hole
-uniform float	bh_mass;
-uniform vec3	bh_pos;	// position du trou noir
 uniform int		steps;	// nombre de pas RK4
 uniform float	step_size;	// h
 
@@ -75,6 +74,17 @@ struct t_gpu_light
 layout(std430, binding = 3) readonly buffer LightBuffer
 {
 	t_gpu_light light[];
+};
+
+struct t_gpu_blackhole
+{
+	vec3	center;
+	float	mass;
+};
+
+layout(std430, binding = 4) readonly buffer BlackholeBuffer
+{
+	t_gpu_blackhole	blackholes[];
 };
 
 
@@ -366,12 +376,18 @@ vec4 photon_trajectory(vec3 dir)
 	float	rs;
 	float	r_max;
 	float	r;
+	vec3	bh_pos;
+	float	bh_mass;
+
+	// Appelee uniquement si blackholes.length() > 0
+	bh_pos = blackholes[0].center;
+	bh_mass = blackholes[0].mass;
 
 	s.pos = cam_origin - bh_pos;
 	s.vel = dir;
 
 	hvec = cross(s.pos, s.vel);
-	h2 = dot(hvec, hvec); // moment angulaire² conservé
+	h2 = dot(hvec, hvec);
 
 	rs = 2.0 * bh_mass;
 
@@ -408,6 +424,14 @@ vec4 photon_trajectory(vec3 dir)
 	return vec4 (0, 0, 0, 1);
 }
 
+vec4 classic_trajectory(vec3 dir)
+{
+	vec4	obj_color;
+
+	if (test_segment_objects(cam_origin, dir * RENDER_DIST, obj_color))
+		return obj_color;
+	return sample_skybox(normalize(dir));
+}
 
 
 /* ——— Main —————————————————————————————————————————————————————————— */
@@ -426,14 +450,18 @@ void main()
 	for (int i = 0; i < nbr_ray; i++)
 	{
 		vec2	offset = fract(vec2(i) * vec2(GOLDEN_NBR_X, GOLDEN_NBR_Y));
+
 		vec2	uv = (vec2(pixel) + offset) * inv_size;
-		// Miroir horizontal : hor_n (cross(dir, up)) donne +x a gauche pour
-		// dir = (0,0,1) -- corrige ici, au point a sens unique pixel->rayon,
-		// jamais dans calcul_viewport (reutilise par les controles/la
-		// continuite d'une frame a l'autre, voir "Pieges connus").
+		// Invertion de l'affichage pour coller a +x a droite.
 		uv.x = 1.0 - uv.x;
+
 		vec3	dir = normalize(cam_corner + uv.x * cam_hor + uv.y * cam_ver - cam_origin);
-		color += photon_trajectory(dir);
+
+		// Raytracer classic vs nouveau raytracer
+		if (blackholes.length() > 0)
+			color += photon_trajectory(dir);
+		else
+			color += classic_trajectory(dir);
 	}
 
 	// Gamma

@@ -10,6 +10,7 @@ void	init_object_buffers(t_data *d)
 	glGenBuffers(1, &d->sphere_ssbo);
 	glGenBuffers(1, &d->ring_ssbo);
 	glGenBuffers(1, &d->light_ssbo);
+	glGenBuffers(1, &d->blackhole_ssbo);
 }
 
 // Envoie les uniforms de la frame courante au shader et dispatch le
@@ -29,8 +30,6 @@ void	params_gl(t_data *d)
 		glUniform3f(glGetUniformLocation(d->program, "cam_corner"), d->sim.cam.corner.x, d->sim.cam.corner.y, d->sim.cam.corner.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_hor"),    d->sim.cam.hor.x,    d->sim.cam.hor.y,    d->sim.cam.hor.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_ver"),    d->sim.cam.ver.x,    d->sim.cam.ver.y,    d->sim.cam.ver.z);
-		glUniform1f(glGetUniformLocation(d->program, "bh_mass"), d->sim.blackholes[0].mass);
-		glUniform3f(glGetUniformLocation(d->program, "bh_pos"), d->sim.blackholes[0].pos.x, d->sim.blackholes[0].pos.y, d->sim.blackholes[0].pos.z);
 		glUniform1i(glGetUniformLocation(d->program, "steps"), 500);
 		glUniform1f(glGetUniformLocation(d->program, "step_size"), 1.0f);
 		glUniform1i(glGetUniformLocation(d->program, "nbr_ray"), d->nbr_ray);

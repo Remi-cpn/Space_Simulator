@@ -42,6 +42,12 @@ typedef struct s_gpu_ring
 	float	color[4];
 }	t_gpu_ring;
 
+typedef struct s_gpu_blackhole
+{
+	float	center[3];
+	float	mass;
+}	t_gpu_blackhole;
+
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */
 char	*read_source_compute_shader(t_data *d, char *shader_name);
@@ -51,5 +57,6 @@ void	init_object_buffers(t_data *d);
 void	upload_sphere_buffer(t_data *d);
 void	upload_ring_buffer(t_data *d);
 void	upload_light_buffer(t_data *d);
+void	upload_blackhole_buffer(t_data *d);
 
 #endif

@@ -63,6 +63,7 @@ void	parsing(t_data *d, char *file_name)
 	upload_sphere_buffer(d);
 	upload_ring_buffer(d);
 	upload_light_buffer(d);
+	upload_blackhole_buffer(d);
 
 	// Initialisation de la structure simulation
 	init_sim(d);
