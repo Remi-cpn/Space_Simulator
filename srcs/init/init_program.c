@@ -75,6 +75,7 @@ t_data	init_program(void)
 
 	// Creation du shader
 	d.program = create_compute_shader(&d, "srcs/shaders/shader.comp");
+	init_obj_texture_units(&d);
 
 	// Reglages
 	d.input = init_input();

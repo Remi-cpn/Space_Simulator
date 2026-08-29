@@ -8,7 +8,6 @@
 
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(binding = 0, rgba8) uniform image2D outImg;
-uniform sampler2D skybox;
 
 // Camera
 uniform vec3 	cam_origin;
@@ -33,6 +32,9 @@ uniform float	shadow_dist;
 uniform float 	exposure;
 uniform float 	gamma;
 
+// Textures -- obj_textures[0] = skybox (unite 0), objets a partir de 1
+uniform sampler2D obj_textures[16];
+
 // Structure Objects respectant le padding de 16bits
 struct t_gpu_sphere
 {
@@ -41,8 +43,8 @@ struct t_gpu_sphere
 	vec4	color;
 	int		emissive;
 	float	intensity; // soleil uniquement (source de lumiere)
-	float	pad1;
-	float	pad2;
+	int		tex_index; // -1 = pas de texture, couleur plate
+	float	pad0;
 };
 
 layout(std430, binding = 1) readonly buffer SphereBuffer
@@ -57,6 +59,10 @@ struct t_gpu_ring
 	vec3	normal;
 	float	outer_rad;
 	vec4	color;
+	int		tex_index;
+	float	pad0;
+	float	pad1;
+	float	pad2;
 };
 
 layout(std430, binding = 2) readonly buffer RingBuffer
@@ -95,7 +101,7 @@ vec4 sample_skybox(vec3 direction)
 	float lon = atan(direction.z, direction.x);
 	float lat = asin(direction.y);
 	vec2 sky_uv = vec2(lon / (2.0 * 3.14159265) + 0.5, lat / 3.14159265 + 0.5);
-	return texture(skybox, sky_uv);
+	return texture(obj_textures[0], sky_uv);
 }
 
 
@@ -183,6 +189,47 @@ vec3 get_hit_normal(vec3 hit_point, int type, int index)
 	if (type == OBJ_TYPE_SPHERE)
 		return (normalize(hit_point - spheres[index].center));
 	return (ring[index].normal);
+}
+
+// Couleur de base au point d'impact : texture si tex_index >= 0, sinon
+// couleur plate (get_hit_color, comportement d'avant les textures).
+// Sphere : mapping lon/lat classique (meme formule que sample_skybox),
+// applique a la direction centre -> point d'impact.
+// Anneau : mapping radial (u, du bord interieur au bord exterieur) et
+// angulaire (v, autour de l'anneau) -- deux vecteurs perpendiculaires a
+// la normale servent de base pour mesurer l'angle.
+vec4 get_base_color(int type, int index, vec3 hit_point)
+{
+	vec3	dir;
+	vec3	arbitrary;
+	vec3	u_axis;
+	vec3	v_axis;
+	vec3	to_hit;
+	float	u;
+	float	v;
+
+	if (type == OBJ_TYPE_SPHERE && spheres[index].tex_index >= 0)
+	{
+		dir = normalize(hit_point - spheres[index].center);
+		u = atan(dir.z, dir.x) / (2.0 * 3.14159265) + 0.5;
+		v = asin(dir.y) / 3.14159265 + 0.5;
+		return (texture(obj_textures[spheres[index].tex_index], vec2(u, v)));
+	}
+	if (type == OBJ_TYPE_RING && ring[index].tex_index >= 0)
+	{
+		to_hit = hit_point - ring[index].center;
+		arbitrary = vec3(0.0, 1.0, 0.0);
+		if (abs(ring[index].normal.y) > 0.99)
+			arbitrary = vec3(1.0, 0.0, 0.0);
+		u_axis = normalize(cross(arbitrary, ring[index].normal));
+		v_axis = cross(ring[index].normal, u_axis);
+		u = clamp((length(to_hit) - ring[index].inner_rad)
+				/ (ring[index].outer_rad - ring[index].inner_rad), 0.0, 1.0);
+		v = atan(dot(to_hit, v_axis), dot(to_hit, u_axis))
+				/ (2.0 * 3.14159265) + 0.5;
+		return (texture(obj_textures[ring[index].tex_index], vec2(u, v)));
+	}
+	return (get_hit_color(type, index));
 }
 
 
@@ -367,11 +414,12 @@ bool test_segment_objects(vec3 ray_origin, vec3 ray_dir, out vec4 hit_color)
 		return false;
 	hit_point = ray_origin + best_t * ray_dir;
 	if (type == OBJ_TYPE_SPHERE && spheres[index].emissive == 1)
-		hit_color = get_hit_color(type, index);
+		hit_color = get_base_color(type, index, hit_point);
 	else
 	{
 		normal = get_hit_normal(hit_point, type, index);
-		hit_color = light_manager(hit_point, normal, get_hit_color(type, index),
+		hit_color = light_manager(hit_point, normal,
+				get_base_color(type, index, hit_point),
 				type == OBJ_TYPE_SPHERE ? index : -1);
 	}
 	return true;

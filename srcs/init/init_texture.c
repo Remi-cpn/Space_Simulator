@@ -37,7 +37,11 @@ static GLuint	*add_texture(t_data *d, char *path)
 
 	levels = (GLsizei)(floor(log2(fmax(w, h))) + 1);
 
-	// Creation de la texture GL et upload des pixels
+	// Creation de la texture GL et upload des pixels -- glActiveTexture
+	// explicite avant le bind : sinon on herite de l'unite laissee active
+	// par le dernier appelant (ex. bind_object_texture), et on peut
+	// ecraser silencieusement son binding au lieu de juste creer/uploader.
+	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &(d->tex[d->tex_count].id));
 	glBindTexture(GL_TEXTURE_2D, d->tex[d->tex_count].id);
 	glTexStorage2D(GL_TEXTURE_2D, levels, GL_RGBA8, w, h);

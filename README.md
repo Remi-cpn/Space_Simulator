@@ -285,30 +285,11 @@ Un soleil rend sa couleur directement (aucun calcul de lumière — c'est une
 source, pas une surface éclairée). Tout le reste (planètes, anneaux) suit un
 modèle de Phong classique : ambiante + diffuse (loi de Lambert, l'angle
 entre la normale et la direction du soleil) + spéculaire (reflet concentré,
-angle entre le rayon réfléchi et la caméra). Rien d'exotique — les mêmes
-maths que le RT classique, appliquées au point d'impact trouvé le long de la
-géodésique plutôt qu'au point d'impact d'un rayon droit.
+angle entre le rayon réfléchi et la caméra).
 
 ### Ombre douce analytique (soleil comme source étendue)
 
-Premier essai, naïf : traiter le soleil comme un point light exact (sa
-position, sans épaisseur). Problème visible immédiatement sur une scène à
-plusieurs planètes — un unique rayon d'ombre tiré vers le centre du soleil
-donne une ombre tout-ou-rien : un petit objet suffisait à éteindre
-complètement la lumière de tout le système dès qu'il passait entre un point
-et le centre exact du soleil, même à des années-lumière de distance de ce
-point. Le soleil est une **source étendue** (un disque, pas un point) — un
-petit objet ne devrait bloquer qu'une fraction de sa surface visible, donc
-assombrir, pas éteindre.
-
-Deuxième essai : échantillonner un point aléatoire différent sur le disque
-du soleil à chaque rayon de supersampling (`nbr_ray`), moyenner. Ça marche
-en théorie, mais `nbr_ray` est plafonné à 5 dans le HUD — largement
-insuffisant pour lisser une pénombre qui peut couvrir plusieurs dizaines de
-degrés dans une scène aux proportions resserrées (voir plus bas) : le
-résultat était un bord d'ombre par "morceaux" superposés, pas un dégradé.
-
-Solution retenue : une formule **analytique**, sans tirage aléatoire ni
+Une formule **analytique**, sans tirage aléatoire ni
 lancer de rayon, inspirée de la méthode d'Orion Sky Lawlor pour les ombres
 douces sphère-sur-sphère. L'idée : comparer des **angles**, vus depuis le
 point éclairé, plutôt que chercher une intersection.
@@ -498,6 +479,18 @@ deviendra bloquant (pas des bugs à corriger dans l'immédiat).
   gravité/métrique, jamais la structure du buffer d'objets. Cohérent avec ça,
   le trou noir est sorti de l'union `t_object` et traité comme les soleils :
   son propre tableau dans `t_simulation`, pas un type d'objet parmi d'autres.
+
+- **Textures d'objets — tableau borné (`sampler2D obj_textures[N]`), pas
+  illimité comme côté C :** un `sampler2D` est un type opaque (lié à une
+  unité de texture matérielle), impossible à stocker dans un SSBO comme une
+  donnée — un objet référence sa texture par index dans ce tableau plutôt
+  que directement. `N` dimensionné sur le nombre réel d'unités de texture
+  de la machine, pas un chiffre arbitraire — largement suffisant pour une
+  scène planétaire. Écarté : bindless textures (lèverait la limite, mais
+  l'extension n'est pas dans le build glad actuel, portabilité incertaine
+  hors NVIDIA) et texture array (lèverait aussi la limite, mais impose la
+  même résolution à toutes les textures — mauvais si une scène mélange une
+  grosse planète et une petite lune).
 
 ## Références à consulter
 

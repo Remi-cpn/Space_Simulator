@@ -4,6 +4,7 @@
 
 #include "shader.h"
 #include "../exit/exit.h"
+#include <stdio.h>
 
 void	init_object_buffers(t_data *d)
 {
@@ -11,6 +12,25 @@ void	init_object_buffers(t_data *d)
 	glGenBuffers(1, &d->ring_ssbo);
 	glGenBuffers(1, &d->light_ssbo);
 	glGenBuffers(1, &d->blackhole_ssbo);
+}
+
+// Fixe une fois pour toutes obj_textures[i] -> unite de texture i (relation
+// statique, independante des textures reellement chargees). Les textures
+// elles-memes sont liees a ces unites plus tard, par upload_sphere_buffer/
+// upload_ring_buffer, a chaque (re)chargement de scene.
+void	init_obj_texture_units(t_data *d)
+{
+	char	name[24];
+	int		i;
+
+	glUseProgram(d->program);
+	i = 0;
+	while (i < OBJ_TEXTURES_MAX)
+	{
+		snprintf(name, sizeof(name), "obj_textures[%d]", i);
+		glUniform1i(glGetUniformLocation(d->program, name), i);
+		i++;
+	}
 }
 
 // Envoie les uniforms de la frame courante au shader et dispatch le
@@ -24,8 +44,8 @@ void	params_gl(t_data *d)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, d->sim.sky.tex);
 
-		// Set uniform de shader.comp
-		glUniform1i(glGetUniformLocation(d->program, "skybox"), 0);
+		// Set uniform de shader.comp (obj_textures[0] -> skybox, fixe une
+		// fois pour toutes par init_obj_texture_units)
 		glUniform3f(glGetUniformLocation(d->program, "cam_origin"), d->sim.cam.origin.x, d->sim.cam.origin.y, d->sim.cam.origin.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_corner"), d->sim.cam.corner.x, d->sim.cam.corner.y, d->sim.cam.corner.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_hor"),    d->sim.cam.hor.x,    d->sim.cam.hor.y,    d->sim.cam.hor.z);

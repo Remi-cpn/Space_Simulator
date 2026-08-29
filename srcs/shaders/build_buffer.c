@@ -5,6 +5,30 @@
 #include "shader.h"
 #include "../exit/exit.h"
 
+// Unite de texture partagee entre upload_sphere_buffer et
+// upload_ring_buffer (les deux puisent dans le meme obj_textures[]) --
+// static locale a la fonction (pas de global de fichier), remise a 1 via
+// reset=true en debut de upload_sphere_buffer (toujours appelee en
+// premier, voir parsing.c/poll_events.c) ; l'unite 0 reste au skybox.
+// Pas de deduplication (retire temporairement pour le debug) : deux
+// objets partageant le meme fichier texture prennent chacun leur unite.
+static int	bind_object_texture(t_data *d, t_texture *tex, bool reset)
+{
+	static int	next_unit = 1;
+	int			unit;
+
+	if (reset)
+		next_unit = 1;
+	if (!tex || tex->type != TEX_IMG)
+		return (-1);
+	if (next_unit >= OBJ_TEXTURES_MAX)
+		exit_prog(d, ERROR_TEX_LIMIT, ERROR_TEX_LIMIT_MSG);
+	unit = next_unit++;
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_2D, tex->id);
+	return (unit);
+}
+
 // Un soleil est une sphere emissive : on le range dans le meme buffer
 // que les spheres classiques (emissive = 1), a la suite. Les vraies
 // spheres sont remplies en premier (emissive = 0, deja zero via
@@ -17,6 +41,7 @@ void	upload_sphere_buffer(t_data *d)
 	int				i;
 	int				j;
 
+	bind_object_texture(d, NULL, true);
 	nb_sphere = 0;
 	i = 0;
 	while (i < d->sim.nb_obj)
@@ -42,6 +67,8 @@ void	upload_sphere_buffer(t_data *d)
 			spheres[j].color[1] = d->sim.objs[i].color.g / 255.0f;
 			spheres[j].color[2] = d->sim.objs[i].color.b / 255.0f;
 			spheres[j].color[3] = 1.0f;
+			spheres[j].tex_index = bind_object_texture(d,
+					&d->sim.objs[i].texture, false);
 			j++;
 		}
 		i++;
@@ -59,6 +86,8 @@ void	upload_sphere_buffer(t_data *d)
 		spheres[j].color[3] = 1.0f;
 		spheres[j].emissive = 1;
 		spheres[j].intensity = (float)d->sim.suns[i].intensity;
+		spheres[j].tex_index = bind_object_texture(d,
+				&d->sim.suns[i].texture, false);
 		i++;
 		j++;
 	}
@@ -109,6 +138,8 @@ void	upload_ring_buffer(t_data *d)
 			rings[j].color[1] = d->sim.objs[i].color.g / 255.0f;
 			rings[j].color[2] = d->sim.objs[i].color.b / 255.0f;
 			rings[j].color[3] = 1.0f;
+			rings[j].tex_index = bind_object_texture(d,
+					&d->sim.objs[i].texture, false);
 			j++;
 		}
 		i++;

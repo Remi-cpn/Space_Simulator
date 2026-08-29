@@ -62,12 +62,14 @@
 	# define ERROR_FILE_SHADER_EMPTY -43
 	# define ERROR_SHADER_COMPILE -44
 	# define ERROR_SHADER_LINK -45
+	# define ERROR_TEX_LIMIT -46
 	# define ERROR_FILE_SHADER_OPEN_MSG "Unable to open the shader file"
 	# define ERROR_FILE_SHADER_FSTAT_MSG "Error when using fstat on shader"
 	# define ERROR_FILE_SHADER_READ_MSG "Invalid read shader file"
 	# define ERROR_FILE_SHADER_EMPTY_MSG "Empty shader file"
 	# define ERROR_SHADER_COMPILE_MSG "Invalid shader compilation"
 	# define ERROR_SHADER_LINK_MSG "Invalid shader link"
+	# define ERROR_TEX_LIMIT_MSG "Too many object textures for the GPU texture-unit budget"
 
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
