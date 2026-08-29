@@ -69,6 +69,7 @@ void	upload_sphere_buffer(t_data *d)
 			spheres[j].color[3] = 1.0f;
 			spheres[j].tex_index = bind_object_texture(d,
 					&d->sim.objs[i].texture, false);
+			spheres[j].shininess = (float)d->sim.objs[i].shininess;
 			j++;
 		}
 		i++;
@@ -88,6 +89,7 @@ void	upload_sphere_buffer(t_data *d)
 		spheres[j].intensity = (float)d->sim.suns[i].intensity;
 		spheres[j].tex_index = bind_object_texture(d,
 				&d->sim.suns[i].texture, false);
+		spheres[j].shininess = (float)d->sim.suns[i].shininess;
 		i++;
 		j++;
 	}
@@ -140,6 +142,7 @@ void	upload_ring_buffer(t_data *d)
 			rings[j].color[3] = 1.0f;
 			rings[j].tex_index = bind_object_texture(d,
 					&d->sim.objs[i].texture, false);
+			rings[j].shininess = (float)d->sim.objs[i].shininess;
 			j++;
 		}
 		i++;

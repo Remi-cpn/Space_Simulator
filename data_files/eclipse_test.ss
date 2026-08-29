@@ -10,10 +10,10 @@ A 0 255,255,255
 C 300,40,-150 0.508,-0.203,0.838 40
 
 # SOLEIL
-# <Itentifiant> <Nom> <Position> <Rayon> <Couleur> <Intencite> <Masse> <Velocity> <Texture> <Bumpmap>
-so Soleil 0,0,0 10 255,240,200 1.0 1.0 0,0,0 NULL NULL
+# <Itentifiant> <Nom> <Position> <Rayon> <Couleur> <Shininess> <Intencite> <Masse> <Velocity> <Texture> <Bumpmap>
+so Soleil 0,0,0 10 255,240,200 32 1.0 1.0 0,0,0 NULL NULL
 
 # Planetes
-# <Itentifiant> <Nom> <Position> <Rayon> <Couleur> <RotationSpeed> <Masse> <Velocity> <Texture> <Bumpmap>
-sp Cible 400,0,0 30 100,150,255 0 1.0 0,0,0 NULL NULL
-sp Lune 350,0,0 8 180,180,180 0 1.0e-3 0,0,0 NULL NULL
+# <Itentifiant> <Nom> <Position> <Rayon> <Couleur> <Shininess> <RotationSpeed> <Masse> <Velocity> <Texture> <Bumpmap>
+sp Cible 400,0,0 30 100,150,255 32 0 1.0 0,0,0 NULL NULL
+sp Lune 350,0,0 8 180,180,180 32 0 1.0e-3 0,0,0 NULL NULL

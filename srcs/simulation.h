@@ -104,6 +104,7 @@ typedef struct s_sun
 	t_color		color;
 	double		intensity;
 	t_texture	texture;
+	double		shininess;
 }	t_sun;
 
 // typedef struct s_plane
@@ -152,6 +153,7 @@ typedef struct s_object
 	t_color				color;
 	t_texture			texture;
 	bool				physics_enabled;
+	double				shininess;
 	union u_shape
 	{
 		t_sphere		sphere;

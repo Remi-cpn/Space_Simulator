@@ -56,14 +56,15 @@ void	add_bh(t_data *d, t_blackhole *bh, char **l_split)
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_BH_ARGS_MSG);
 }
 
-// <Identifiant> <Nom> <Position> <Rayon> <Couleur> <RotationSpeed>
-// <Masse> <Velocity> <Texture> <Bumpmap> — masse/velocity pas encore
-// branches (physique desactivee), reserves pour plus tard.
+// <Identifiant> <Nom> <Position> <Rayon> <Couleur> <Shininess>
+// <RotationSpeed> <Masse> <Velocity> <Texture> <Bumpmap> — masse/velocity
+// pas encore branches (physique desactivee), reserves pour plus tard.
 void	add_sp_solar(t_data *d, t_object *o, char **l_split)
 {
-	if (check_idx_string_tab(l_split, 9))
+	if (check_idx_string_tab(l_split, 10))
 	{
-		if (!double_valid(l_split[3]) || !double_valid(l_split[5]))
+		if (!double_valid(l_split[3]) || !double_valid(l_split[5])
+			|| !double_valid(l_split[6]))
 			exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_SP_ARGS_MSG);
 		o->type = OBJ_SPHERE;
 		o->physics_enabled = false;
@@ -71,29 +72,31 @@ void	add_sp_solar(t_data *d, t_object *o, char **l_split)
 		o->shape.sphere.center = get_vec(d, l_split[2]);
 		o->shape.sphere.radius = ft_atod(l_split[3]) / 2.0;
 		o->color = get_color(d, l_split[4]);
+		o->shininess = ft_atod(l_split[5]);
 		o->shape.sphere.rotation = 0.0;
-		o->shape.sphere.rotation_speed = ft_atod(l_split[5]);
-		if (ft_strncmp(l_split[8], "NULL", 5))
+		o->shape.sphere.rotation_speed = ft_atod(l_split[6]);
+		if (ft_strncmp(l_split[9], "NULL", 5))
 		{
-			if (ft_strncmp(l_split[9], "NULL", 5))
-				pars_texture_map(d, &(o->texture), l_split[8], l_split[9]);
+			if (ft_strncmp(l_split[10], "NULL", 5))
+				pars_texture_map(d, &(o->texture), l_split[9], l_split[10]);
 			else
-				pars_texture_map(d, &(o->texture), l_split[8], NULL);
+				pars_texture_map(d, &(o->texture), l_split[9], NULL);
 		}
 	}
 	else
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_SP_ARGS_MSG);
-	if (o->shape.sphere.radius <= 0.0)
+	if (o->shape.sphere.radius <= 0.0 || o->shininess <= 0.0)
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_SP_ARGS_MSG);
 }
 
 // <Identifiant> <Nom> <Normale> <RayonInterieur> <RayonExterieur>
-// <Couleur> <Texture> <Bumpmap>
+// <Couleur> <Shininess> <Texture> <Bumpmap>
 void	add_ri(t_data *d, t_object *o, char **l_split, int idx)
 {
-	if (check_idx_string_tab(l_split, 7))
+	if (check_idx_string_tab(l_split, 8))
 	{
-		if (!double_valid(l_split[3]) || !double_valid(l_split[4]))
+		if (!double_valid(l_split[3]) || !double_valid(l_split[4])
+			|| !double_valid(l_split[6]))
 			exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_RI_ARGS_MSG);
 		o->type = OBJ_RING;
 		o->physics_enabled = false;
@@ -108,45 +111,48 @@ void	add_ri(t_data *d, t_object *o, char **l_split, int idx)
 		o->shape.ring.inner_rad = ft_atod(l_split[3]);
 		o->shape.ring.outer_rad = ft_atod(l_split[4]);
 		o->color = get_color(d, l_split[5]);
-		if (ft_strncmp(l_split[6], "NULL", 5))
+		o->shininess = ft_atod(l_split[6]);
+		if (ft_strncmp(l_split[7], "NULL", 5))
 		{
-			if (ft_strncmp(l_split[7], "NULL", 5))
-				pars_texture_map(d, &(o->texture), l_split[6], l_split[7]);
+			if (ft_strncmp(l_split[8], "NULL", 5))
+				pars_texture_map(d, &(o->texture), l_split[7], l_split[8]);
 			else
-				pars_texture_map(d, &(o->texture), l_split[6], NULL);
+				pars_texture_map(d, &(o->texture), l_split[7], NULL);
 		}
 	}
 	else
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_RI_ARGS_MSG);
 	if (o->shape.ring.inner_rad < 0.0
 		|| o->shape.ring.outer_rad <= o->shape.ring.inner_rad
-		|| o->shape.ring.center == NULL)
+		|| o->shape.ring.center == NULL || o->shininess <= 0.0)
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_RI_ARGS_MSG);
 }
 
-// <Identifiant> <Nom> <Position> <Rayon> <Couleur> <Intensite> <Masse>
-// <Velocity> <Texture> <Bumpmap> — masse/velocity pas encore branches.
+// <Identifiant> <Nom> <Position> <Rayon> <Couleur> <Shininess> <Intensite>
+// <Masse> <Velocity> <Texture> <Bumpmap> — masse/velocity pas encore
+// branches.
 void	add_so(t_data *d, t_sun *s, char **l)
 {
-	if (check_idx_string_tab(l, 9))
+	if (check_idx_string_tab(l, 10))
 	{
-		if (!double_valid(l[3]) || !double_valid(l[5]))
+		if (!double_valid(l[3]) || !double_valid(l[5]) || !double_valid(l[6]))
 			exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_SO_ARGS_MSG);
 		s->name = get_name(l[1]);
 		s->pos = get_vec(d, l[2]);
 		s->radius = ft_atod(l[3]) / 2.0;
 		s->color = get_color(d, l[4]);
-		s->intensity = ft_atod(l[5]);
-		if (ft_strncmp(l[8], "NULL", 5))
+		s->shininess = ft_atod(l[5]);
+		s->intensity = ft_atod(l[6]);
+		if (ft_strncmp(l[9], "NULL", 5))
 		{
-			if (ft_strncmp(l[9], "NULL", 5))
-				pars_texture_map(d, &(s->texture), l[8], l[9]);
+			if (ft_strncmp(l[10], "NULL", 5))
+				pars_texture_map(d, &(s->texture), l[9], l[10]);
 			else
-				pars_texture_map(d, &(s->texture), l[8], NULL);
+				pars_texture_map(d, &(s->texture), l[9], NULL);
 		}
 	}
 	else
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_SO_ARGS_MSG);
-	if (s->radius <= 0.0 || s->intensity < 0)
+	if (s->radius <= 0.0 || s->intensity < 0 || s->shininess <= 0.0)
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_SO_ARGS_MSG);
 }

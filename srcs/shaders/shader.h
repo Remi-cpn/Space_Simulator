@@ -34,7 +34,7 @@ typedef struct s_gpu_sphere
 	int		emissive;
 	float	intensity;
 	int		tex_index;
-	float	pad0;
+	float	shininess;
 }	t_gpu_sphere;
 
 typedef struct s_gpu_ring
@@ -45,9 +45,9 @@ typedef struct s_gpu_ring
 	float	outer_rad;
 	float	color[4];
 	int		tex_index;
+	float	shininess;
 	float	pad0;
 	float	pad1;
-	float	pad2;
 }	t_gpu_ring;
 
 typedef struct s_gpu_blackhole

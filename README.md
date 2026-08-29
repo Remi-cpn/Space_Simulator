@@ -348,8 +348,7 @@ comparable à une vraie ombre d'éclipse.
       éclairés (planètes : Phong — ambiante + diffuse + spéculaire, calculé
       au point d'impact). Ombre douce analytique pour les soleils (voir
       [Éclairage](#éclairage)) plutôt qu'un point light tout-ou-rien.
-- [ ] Textures planétaires (mapping sphérique, déjà connu du RT) : chemin
-      parsé depuis le `.ss`, pas encore échantillonné côté shader.
+- [x] Textures planétaires (mapping sphérique, déjà connu du RT).
 - [x] Cas spectaculaire validé : une planète/soleil derrière le trou noir
       apparaît déformé en arc près de l'anneau de photons (confirmé
       visuellement).
