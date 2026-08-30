@@ -1,16 +1,13 @@
 /* ************************************************************************** */
 /*   Space_Simulator — gl_debug.c                                             */
-/*   Callback de debug OpenGL : le driver l'appelle seul en cas de problème.  */
+/*   OpenGL debug callback : called directly by the driver whenever           */
+/*   something goes wrong.                                                    */
 /* ************************************************************************** */
 
 #include "debug.h"
 
-#ifndef APIENTRY
-# define APIENTRY
-#endif
-
-// Traduit le GLenum "source" d'un message de debug OpenGL en chaine
-// lisible, pour l'affichage dans gl_debug_callback.
+/*	Translates the GLenum "source" of an OpenGL debug message into a
+	readable string, for display in gl_debug_callback.	*/
 static const char	*debug_source(GLenum source)
 {
 	if (source == GL_DEBUG_SOURCE_API)
@@ -26,8 +23,8 @@ static const char	*debug_source(GLenum source)
 	return ("OTHER");
 }
 
-// Traduit le GLenum "type" d'un message de debug OpenGL (erreur,
-// deprecation, perf...) en chaine lisible.
+/*	Translates the GLenum "type" of an OpenGL debug message (error,
+	deprecation, perf...) into a readable string.	*/
 static const char	*debug_type(GLenum type)
 {
 	if (type == GL_DEBUG_TYPE_ERROR)
@@ -43,8 +40,8 @@ static const char	*debug_type(GLenum type)
 	return ("OTHER");
 }
 
-// Traduit le GLenum "severity" d'un message de debug OpenGL en
-// chaine lisible (HIGH/MEDIUM/LOW/NOTIF).
+/*	Translates the GLenum "severity" of an OpenGL debug message into
+	a readable string (HIGH/MEDIUM/LOW/NOTIF).	*/
 static const char	*debug_severity(GLenum severity)
 {
 	if (severity == GL_DEBUG_SEVERITY_HIGH)
@@ -56,8 +53,8 @@ static const char	*debug_severity(GLenum severity)
 	return ("NOTIF");
 }
 
-// Assemble les traductions ci-dessus en une ligne "[GL][SRC][TYPE][SEV] msg"
-// ecrite sur stderr ; ignore les simples notifications.
+/*	Assembles the translations above into one "[GL][SRC][TYPE][SEV] msg"
+	line written to stderr, ignores plain notifications.	*/
 void APIENTRY	gl_debug_callback(GLenum source, GLenum type, GLuint id,
 					GLenum severity, GLsizei length,
 					const GLchar *message, const void *user_param)
@@ -66,7 +63,7 @@ void APIENTRY	gl_debug_callback(GLenum source, GLenum type, GLuint id,
 	(void)length;
 	(void)user_param;
 
-	// Peut etre supprimé pour voir les notifications
+	// Can be removed to also see notifications
 	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
 		return ;
 

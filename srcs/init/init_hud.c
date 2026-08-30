@@ -12,15 +12,15 @@ static char	*label(char *name)
 {
 	if (name)
 		return (name);
-	return ("(sans nom)");
+	return ("(no name)");
 }
 
 // Enregistre dans l'arbre les parametres reglables au clavier/molette
 // (nombre de rayons, coefficient de vitesse, exposure/gamma).
 static void	init_hud_params(t_data *d, t_hud_db *cat)
 {
-	hud_append(cat, &cat->child, hud_new(d, "rayons/px", HUD_UINT, &d->nbr_ray));
-	hud_append(cat, &cat->child, hud_new(d, "coef molette", HUD_UINT, &d->wheel_coef));
+	hud_append(cat, &cat->child, hud_new(d, "rays/px", HUD_UINT, &d->nbr_ray));
+	hud_append(cat, &cat->child, hud_new(d, "wheel coef", HUD_UINT, &d->wheel_coef));
 	hud_append(cat, &cat->child, hud_new(d, "exposure", HUD_FLOAT, &d->exposure));
 	hud_append(cat, &cat->child, hud_new(d, "gamma", HUD_FLOAT, &d->gamma));
 }
@@ -36,7 +36,7 @@ static void	init_hud_blackholes(t_data *d, t_hud_db *cat)
 	{
 		inst = hud_new(d, label(d->sim.blackholes[i].name), HUD_NONE, NULL);
 		hud_append(cat, &cat->child, inst);
-		hud_append(inst, &inst->child, hud_new(d, "masse", HUD_FLOAT,
+		hud_append(inst, &inst->child, hud_new(d, "mass", HUD_FLOAT,
 				&d->sim.blackholes[i].mass));
 		hud_append(inst, &inst->child, hud_new(d, "pos x", HUD_DOUBLE,
 				&d->sim.blackholes[i].pos.x));
@@ -59,9 +59,9 @@ static void	init_hud_suns(t_data *d, t_hud_db *cat)
 	{
 		inst = hud_new(d, label(d->sim.suns[i].name), HUD_NONE, NULL);
 		hud_append(cat, &cat->child, inst);
-		hud_append(inst, &inst->child, hud_new(d, "rayon", HUD_DOUBLE,
+		hud_append(inst, &inst->child, hud_new(d, "radius", HUD_DOUBLE,
 				&d->sim.suns[i].radius));
-		hud_append(inst, &inst->child, hud_new(d, "intensite", HUD_DOUBLE,
+		hud_append(inst, &inst->child, hud_new(d, "intensity", HUD_DOUBLE,
 				&d->sim.suns[i].intensity));
 		i++;
 	}
@@ -83,16 +83,14 @@ static void	init_hud_object(t_data *d, t_hud_db *cat, t_object *o)
 				&o->shape.sphere.center.y));
 		hud_append(inst, &inst->child, hud_new(d, "pos z", HUD_DOUBLE,
 				&o->shape.sphere.center.z));
-		hud_append(inst, &inst->child, hud_new(d, "rayon", HUD_DOUBLE,
+		hud_append(inst, &inst->child, hud_new(d, "radius", HUD_DOUBLE,
 				&o->shape.sphere.radius));
-		hud_append(inst, &inst->child, hud_new(d, "rotation speed",
-				HUD_DOUBLE, &o->shape.sphere.rotation_speed));
 	}
 	else if (o->type == OBJ_RING)
 	{
-		hud_append(inst, &inst->child, hud_new(d, "rayon int", HUD_DOUBLE,
+		hud_append(inst, &inst->child, hud_new(d, "inner radius", HUD_DOUBLE,
 				&o->shape.ring.inner_rad));
-		hud_append(inst, &inst->child, hud_new(d, "rayon ext", HUD_DOUBLE,
+		hud_append(inst, &inst->child, hud_new(d, "outer radius", HUD_DOUBLE,
 				&o->shape.ring.outer_rad));
 	}
 }
@@ -126,21 +124,21 @@ static void	init_hud_lights(t_data *d, t_hud_db *cat)
 				&d->sim.lights[i].position.y));
 		hud_append(inst, &inst->child, hud_new(d, "pos z", HUD_DOUBLE,
 				&d->sim.lights[i].position.z));
-		hud_append(inst, &inst->child, hud_new(d, "intensite", HUD_DOUBLE,
+		hud_append(inst, &inst->child, hud_new(d, "intensity", HUD_DOUBLE,
 				&d->sim.lights[i].intensity));
 		i++;
 	}
 }
 
 // Meme structure que les autres categories (instance -> parametres),
-// meme s'il n'y a qu'un seul mode caméra pour l'instant ("Libre", le
+// meme s'il n'y a qu'un seul mode caméra pour l'instant ("Free", le
 // seul implemente dans camera.c) : pret pour d'autres modes plus tard
 // (ex. "Follow") sans rien changer ici.
 static void	init_hud_camera(t_data *d, t_hud_db *cat)
 {
 	t_hud_db	*inst;
 
-	inst = hud_new(d, "Libre", HUD_NONE, NULL);
+	inst = hud_new(d, "Free", HUD_NONE, NULL);
 	hud_append(cat, &cat->child, inst);
 	hud_append(inst, &inst->child, hud_new(d, "fov", HUD_DOUBLE, &d->sim.cam.fov));
 	hud_append(inst, &inst->child, hud_new(d, "pos x", HUD_DOUBLE, &d->sim.cam.origin.x));
@@ -152,23 +150,23 @@ static void	init_hud_camera(t_data *d, t_hud_db *cat)
 }
 
 // Construit l'arbre HUD complet et l'affiche une premiere fois. Chaque
-// categorie racine reste vide (affichee "(aucun)") si la scene n'a rien
+// categorie racine reste vide (affichee "(none)") si la scene n'a rien
 // de ce type.
 void	init_hud(t_data *d)
 {
 	t_hud_db	*cat;
 
 	d->hud_db = NULL;
-	cat = hud_new(d, "Reglage", HUD_NONE, NULL);
+	cat = hud_new(d, "Settings", HUD_NONE, NULL);
 	hud_append(NULL, &d->hud_db, cat);
 	init_hud_params(d, cat);
-	cat = hud_new(d, "Trou noir", HUD_NONE, NULL);
+	cat = hud_new(d, "Black hole", HUD_NONE, NULL);
 	hud_append(NULL, &d->hud_db, cat);
 	init_hud_blackholes(d, cat);
-	cat = hud_new(d, "Soleil", HUD_NONE, NULL);
+	cat = hud_new(d, "Sun", HUD_NONE, NULL);
 	hud_append(NULL, &d->hud_db, cat);
 	init_hud_suns(d, cat);
-	cat = hud_new(d, "Objets", HUD_NONE, NULL);
+	cat = hud_new(d, "Objects", HUD_NONE, NULL);
 	hud_append(NULL, &d->hud_db, cat);
 	init_hud_objects(d, cat);
 	cat = hud_new(d, "Lights", HUD_NONE, NULL);
