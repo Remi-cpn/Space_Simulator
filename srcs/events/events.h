@@ -1,5 +1,7 @@
 /* ************************************************************************** */
-/*   Space_Simulator — input.h                                                */
+/*   Space_Simulator — events.h                                               */
+/*   Keyboard/mouse scancodes and the input state struct, plus the SDL        */
+/*   event-polling entry point (defined in poll_events.c).                    */
 /* ************************************************************************** */
 
 #ifndef EVENT_H

@@ -1,5 +1,7 @@
 /* ************************************************************************** */
 /*   Space_Simulator — exit.h                                                 */
+/*   Exit codes and error messages shared across the project, plus the        */
+/*   declaration of exit_prog (defined in exit_program.c).                    */
 /* ************************************************************************** */
 
 #ifndef EXIT_H
@@ -13,9 +15,11 @@
 # include "../data.h"
 # include "../../library/libft/libft.h"
 
-/* ——— Define exit messages (negative values is personal error codes) ——————— */
+/* ——— Define exit messages (negative values are personal error codes) —————— */
 	# define EXIT_SUCCESS 0
 	# define EXIT_ERROR 1
+
+// Default 10
 	# define ERROR_MALLOC -1
 	# define ERROR_MALLOC_MSG "Failed to allocate memory"
 
