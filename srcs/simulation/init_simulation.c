@@ -2,7 +2,7 @@
 /*   Space_Simulator — init_program.c                                         */
 /* ************************************************************************** */
 
-#include "../simulation.h"
+#include "simulation.h"
 #include "../parsing/parsing.h"
 
 // Construit la base orthonormee de la camera (hor_n/ver_n) et le coin

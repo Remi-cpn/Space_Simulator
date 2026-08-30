@@ -3,7 +3,7 @@
 /* ************************************************************************** */
 
 #include "../data.h"
-#include "../simulation.h"
+#include "simulation.h"
 
 
 // static bool	update_cam_orbit(t_data *d, double speed)

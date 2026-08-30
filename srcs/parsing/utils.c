@@ -4,7 +4,7 @@
 
 #include "parsing.h"
 #include "../exit/exit.h"
-#include "../simulation.h"
+#include "../simulation/simulation.h"
 
 // double	get_mass(char *s)
 // {

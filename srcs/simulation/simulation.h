@@ -7,12 +7,12 @@
 
 
 /* ——— Lib Extern ——————————————————————————————————————————————————————————— */
-# include "../external/glad/include/glad/gl.h"
+# include "../../external/glad/include/glad/gl.h"
 
 
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
-# include "../library/librt/librt.h"
+# include "../../library/librt/librt.h"
 
 /* ——— DEFINE     ——————————————————————————————————————————————————————————— */
 # define RENDER_DIST 5000.0

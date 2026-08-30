@@ -1,12 +1,11 @@
 /* ************************************************************************** */
 /*   Space_Simulator — init_hud.c                                             */
-/*   Construit l'arbre de valeurs navigable/reglable du HUD (categories ->    */
-/*   instances nommees -> parametres), a appeler une fois que d->sim est en   */
-/*   place (apres parsing).                                                   */
+/*   Builds the HUD's navigable/editable value tree (categories ->            */
+/*   named instances -> parameters).                                          */
 /* ************************************************************************** */
 
 #include "../data.h"
-#include "../debug/debug.h"
+#include "debug.h"
 
 static char	*label(char *name)
 {
@@ -15,8 +14,8 @@ static char	*label(char *name)
 	return ("(no name)");
 }
 
-// Enregistre dans l'arbre les parametres reglables au clavier/molette
-// (nombre de rayons, coefficient de vitesse, exposure/gamma).
+/*	Registers the parameters adjustable via keyboard/wheel into
+	the tree.	*/
 static void	init_hud_params(t_data *d, t_hud_db *cat)
 {
 	hud_append(cat, &cat->child, hud_new(d, "rays/px", HUD_UINT, &d->nbr_ray));
@@ -25,7 +24,8 @@ static void	init_hud_params(t_data *d, t_hud_db *cat)
 	hud_append(cat, &cat->child, hud_new(d, "gamma", HUD_FLOAT, &d->gamma));
 }
 
-// Une sous-categorie par trou noir, nommee, avec masse/position en enfants.
+/*	One named sub-category per black hole, with mass/position as
+	children.	*/
 static void	init_hud_blackholes(t_data *d, t_hud_db *cat)
 {
 	t_hud_db	*inst;
@@ -48,7 +48,8 @@ static void	init_hud_blackholes(t_data *d, t_hud_db *cat)
 	}
 }
 
-// Une sous-categorie par soleil, nommee, avec rayon/intensite en enfants.
+/*	One named sub-category per sun, with radius/intensity as
+	children.	*/
 static void	init_hud_suns(t_data *d, t_hud_db *cat)
 {
 	t_hud_db	*inst;
@@ -67,8 +68,8 @@ static void	init_hud_suns(t_data *d, t_hud_db *cat)
 	}
 }
 
-// Une sous-categorie par objet (sphere/anneau), nommee, avec les champs
-// propres a son type en enfants.
+/*	One named sub-category per object (sphere/ring), with the fields
+	specific to its type as children.	*/
 static void	init_hud_object(t_data *d, t_hud_db *cat, t_object *o)
 {
 	t_hud_db	*inst;
@@ -107,7 +108,7 @@ static void	init_hud_objects(t_data *d, t_hud_db *cat)
 	}
 }
 
-// Une sous-categorie par lumiere, nommee, avec position/intensite.
+/*	One named sub-category per light, with position/intensity.	*/
 static void	init_hud_lights(t_data *d, t_hud_db *cat)
 {
 	t_hud_db	*inst;
@@ -130,10 +131,10 @@ static void	init_hud_lights(t_data *d, t_hud_db *cat)
 	}
 }
 
-// Meme structure que les autres categories (instance -> parametres),
-// meme s'il n'y a qu'un seul mode caméra pour l'instant ("Free", le
-// seul implemente dans camera.c) : pret pour d'autres modes plus tard
-// (ex. "Follow") sans rien changer ici.
+/*	Same structure as the other categories (instance -> parameters),
+	even though there is only one camera mode for now ("Free", the
+	only one implemented in camera.c) : ready for other modes later
+	(e.g. "Follow") without changing anything here.	*/
 static void	init_hud_camera(t_data *d, t_hud_db *cat)
 {
 	t_hud_db	*inst;
@@ -149,9 +150,9 @@ static void	init_hud_camera(t_data *d, t_hud_db *cat)
 	hud_append(inst, &inst->child, hud_new(d, "dir z", HUD_DOUBLE, &d->sim.cam.dir.z));
 }
 
-// Construit l'arbre HUD complet et l'affiche une premiere fois. Chaque
-// categorie racine reste vide (affichee "(none)") si la scene n'a rien
-// de ce type.
+/*	Builds the complete HUD tree and prints it for the first time.
+	Each root category stays empty (shown as "(none)") if the scene
+	has nothing of that type.	*/
 void	init_hud(t_data *d)
 {
 	t_hud_db	*cat;
