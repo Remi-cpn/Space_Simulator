@@ -40,7 +40,7 @@ typedef enum e_key
 	LCTRL = 224,
 	LSHIFT = 225,
 	SPACE = 44,
-	_R = 21,
+	R = 21,
 	PGUP = 75,
 	PGDOWN = 78,
 	ENTER = 40,
