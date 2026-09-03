@@ -1,12 +1,14 @@
 /* ************************************************************************** */
-/*   Space_Simulator — init_program.c                                         */
+/*   Space_Simulator — init_simulation.c                                      */
+/*   Builds the camera's viewport from its dir/fov and the window's           */
+/*   resolution.                                                              */
 /* ************************************************************************** */
 
 #include "simulation.h"
 #include "../parsing/parsing.h"
 
-// Construit la base orthonormee de la camera (hor_n/ver_n) et le coin
-// du viewport, a partir de dir/fov.
+/*	Builds the camera's orthonormal basis (hor_n/ver_n) and the
+	viewport corner, from dir/fov.	*/
 void	calcul_viewport(t_camera *cam, double ratio)
 {
 	double				fov_rad;
@@ -33,8 +35,8 @@ void	calcul_viewport(t_camera *cam, double ratio)
 	cam->corner = vec_add(cam->corner, vec_mult_scalar(cam->dir, cam->focal));
 }
 
-// Calcule le viewport initial de la camera a partir de la resolution
-// de la fenetre.
+/*	Computes the camera's initial viewport from the window's
+	resolution.	*/
 void	init_sim(t_data *d)
 {
 	calcul_viewport(&(d->sim.cam), (double)d->win_w / (double)d->win_h);

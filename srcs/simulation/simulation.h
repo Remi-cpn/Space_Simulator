@@ -1,5 +1,7 @@
 /* ************************************************************************** */
 /*   Space_Simulator — simulation.h                                           */
+/*   Scene model : camera, objects, suns, black holes, lights, and the        */
+/*   t_simulation struct that ties them together.                             */
 /* ************************************************************************** */
 
 #ifndef SIMULATION_H
@@ -8,8 +10,6 @@
 
 /* ——— Lib Extern ——————————————————————————————————————————————————————————— */
 # include "../../external/glad/include/glad/gl.h"
-
-
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
 # include "../../library/librt/librt.h"
@@ -145,21 +145,21 @@ typedef struct	s_simulation
 	// Objects
 		t_object	*objs;
 		int			nb_obj;
-	// Soleils
+	// Suns
 		t_sun		*suns;
 		int			nb_sun;
-	// Trous noirs
+	// Black holes
 		t_blackhole	*blackholes;
 		int			nb_bh;
-	// Lumieres
+	// Lights
 		t_light		*lights;
 		int			nb_light;
-	// Amibiente light
+	// Ambient light
 		t_color		ambient;
 		double		ambient_ratio;
 	// SkyBox
 		t_skybox	sky;
-	// Reglage
+	// Settings
 		float		shadow_dist;
 }	t_simulation;
 
