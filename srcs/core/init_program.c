@@ -1,5 +1,7 @@
 /* ************************************************************************** */
 /*   Space_Simulator — init_program.c                                         */
+/*   Global bootstrap : SDL/GL context, glad, debug callback, output          */
+/*   texture, shader compilation, default runtime state.                      */
 /* ************************************************************************** */
 
 #include "../data.h"
@@ -7,7 +9,7 @@
 #include "../debug/debug.h"
 #include "../shaders/shader.h"
 
-// Renvoie un t_input entierement a zero (aucune touche enfoncee).
+// Returns a t_input entirely at zero (no key pressed).
 static t_input	init_input(void)
 {
 	t_input	i;
@@ -16,41 +18,41 @@ static t_input	init_input(void)
 	return (i);
 }
 
-// Initialise SDL, cree la fenetre et le contexte OpenGL 4.3 Core,
-// avec le flag debug pour recuperer les erreurs du driver.
+// Initializes SDL, creates the window and the OpenGL 4.3 Core context,
+// with the debug flag to retrieve driver errors.
 static void	init_SDL(t_data *d)
 {
-	// Initialisation du système vidéo
+	// Video system initialization
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		exit_prog(d, ERROR_SDL_INIT, SDL_GetError());
 
-	// Choix de la version de SDL
+	// SDL version choice
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-	// Choix du profil
+	// Profile choice
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
 		SDL_GL_CONTEXT_PROFILE_CORE);
 
-	// Pour un rendu hors écran
+	// For off-screen rendering
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	// Pour erreur de compilation des shaders
+	// For shader compilation errors
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-	// Initialisation de la fenêtre
+	// Window initialization
 	d->win = SDL_CreateWindow("Space_Simulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, d->win_w, d->win_h, SDL_WINDOW_OPENGL);
 	if (!d->win)
 		exit_prog(d, ERROR_SDL_WINDOW, SDL_GetError());
 
-	// Initialisation du context, l'état complet d'OpenGL
+	// Context initialization, the complete OpenGL state
 	d->ctx = SDL_GL_CreateContext(d->win);
 	if (!d->ctx)
 		exit_prog(d, ERROR_SDL_CONTEXT, SDL_GetError());
 }
 
-// Point d'entree de l'init globale : SDL/GL, glad, callback de debug,
-// texture de sortie, compilation du shader, etat par defaut.
+// Entry point for the global init : SDL/GL, glad, debug callback,
+// output texture, shader compilation, default state.
 t_data	init_program(void)
 {
 	t_data	d;
@@ -60,24 +62,24 @@ t_data	init_program(void)
 	d.win_h = WIN_H;
 	init_SDL(&d);
 
-	// Chargement de glad qui donne accès aux fonctions OpenGL modernes
+	// Loading glad, which gives access to modern OpenGL functions
 	gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
 
-	// Setup du system de debug
+	// Debug system setup
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(gl_debug_callback, NULL);
 
 	init_image(&d);
 
-	// Init les structures d'objets du shader
+	// Init the shader's object structures
 	init_object_buffers(&d);
 
-	// Creation du shader
+	// Shader creation
 	d.program = create_compute_shader(&d, "srcs/shaders/shader.comp");
 	init_obj_texture_units(&d);
 
-	// Reglages
+	// Settings
 	d.input = init_input();
 	d.cam_target = -1;
 	d.nbr_ray = 2;

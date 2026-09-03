@@ -1,5 +1,7 @@
 /* ************************************************************************** */
-/*   Space_Simulator — init_texture.c                                        */
+/*   Space_Simulator — init_texture.c                                         */
+/*   GL texture cache : loads images via stb_image and reuses already         */
+/*   loaded ones by path.                                                     */
 /* ************************************************************************** */
 
 #include "../data.h"
@@ -7,8 +9,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../external/stb/stb_image.h"
 
-// Charge une image (stb_image), l'upload en texture GL avec mipmaps,
-// et l'ajoute au cache (avec growth par bloc de 16).
+/*	Loads an image (stb_image), uploads it as a GL texture with
+	mipmaps, and adds it to the cache (growing by blocks of 16).	*/
 static GLuint	*add_texture(t_data *d, char *path)
 {
 	int				w;
@@ -37,30 +39,29 @@ static GLuint	*add_texture(t_data *d, char *path)
 
 	levels = (GLsizei)(floor(log2(fmax(w, h))) + 1);
 
-	// Creation de la texture GL et upload des pixels -- glActiveTexture
-	// explicite avant le bind : sinon on herite de l'unite laissee active
-	// par le dernier appelant (ex. bind_object_texture), et on peut
-	// ecraser silencieusement son binding au lieu de juste creer/uploader.
+	// Creates the GL texture and uploads the pixels. Explicit glActiveTexture
+	// before the bind, otherwise we inherit whichever unit was left active
+	// by the last caller.
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &(d->tex[d->tex_count].id));
 	glBindTexture(GL_TEXTURE_2D, d->tex[d->tex_count].id);
 	glTexStorage2D(GL_TEXTURE_2D, levels, GL_RGBA8, w, h);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-	// Filtrage et wrap
+	// Filtering and wrap
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	// Generation des mipmaps
+	// Mipmap generation
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
 	d->tex_count++;
 	return (&(d->tex[d->tex_count - 1].id));
 }
 
-// Cherche une texture deja chargee par son chemin dans le cache.
+/*	Looks for a texture already loaded, by its path, in the cache.	*/
 static t_texture *find_texture(t_data *d, char *path)
 {
 	int	i;
@@ -75,8 +76,8 @@ static t_texture *find_texture(t_data *d, char *path)
 	return (NULL);
 }
 
-// Renvoie l'id GL d'une texture, en la chargeant seulement si elle
-// n'est pas deja dans le cache.
+/*	Returns a texture's GL id, loading it only if it isn't already
+	in the cache.	*/
 GLuint	load_texture(t_data *d, char *path)
 {
 	t_texture	*t;

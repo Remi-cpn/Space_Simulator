@@ -1,13 +1,13 @@
 /* ************************************************************************** */
 /*   Space_Simulator — init_image.c                                           */
+/*   Creates and resizes the compute shader's output texture and its FBO.     */
 /* ************************************************************************** */
 
 #include "../data.h"
 #include "../exit/exit.h"
 #include "../debug/debug.h"
 
-// Recree la texture/FBO a la nouvelle taille de fenetre (appelee au
-// resize), avec une taille minimale de 1x1 pour eviter un GL invalide.
+/*	Recreates the texture/FBO at the new window size.	*/
 void	init_resize_image(t_data *d, int new_w, int new_h)
 {
 	if (d->fbo)
@@ -23,19 +23,14 @@ void	init_resize_image(t_data *d, int new_w, int new_h)
 	init_image(d);
 }
 
-// Cree la texture de sortie du compute shader et le FBO qui permet
-// de la blitter a l'ecran ensuite.
+/*	Creates the compute shader's output texture and the FBO that lets
+	it be blitted to the screen afterwards.	*/
 void	init_image(t_data *d)
 {
 	glGenTextures(1, &(d->img));
 	glBindTexture(GL_TEXTURE_2D, d->img);
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, d->win_w, d->win_h);
-
-	// Rend la texture accessible dans le shader
 	glBindImageTexture(0, d->img, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
-	// Framebuffer Object
-	// Rend cette texture éligible comme source de blit.
 	glGenFramebuffers(1, &(d->fbo));
 	glBindFramebuffer(GL_FRAMEBUFFER, d->fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d->img, 0);
