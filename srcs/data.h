@@ -1,5 +1,7 @@
 /* ************************************************************************** */
 /*   Space_Simulator — data.h                                                 */
+/*   Root t_data struct : window/GL state, textures, simulation, GPU          */
+/*   objects, and runtime settings.                                           */
 /* ************************************************************************** */
 
 #ifndef DATA_H
@@ -10,7 +12,7 @@
 /* ——— Lib Extern ——————————————————————————————————————————————————————————— */
 
 
-/* ——— Lib Graphique ———————————————————————————————————————————————————————— */
+/* ——— Lib Graphics ————————————————————————————————————————————————————————— */
 # include "../external/glad/include/glad/gl.h"
 # include <SDL2/SDL.h>
 
@@ -50,12 +52,12 @@ typedef struct s_data
 		int				tex_capacity;
 	// Simulation
 		t_simulation	sim;
-	// Objets GPU
+	// GPU objects
 		GLuint			sphere_ssbo;
 		GLuint			ring_ssbo;
 		GLuint			light_ssbo;
 		GLuint			blackhole_ssbo;
-	// Reglage
+	// Settings
 		t_input			input;
 		unsigned int	nbr_ray;
 		unsigned int	wheel_coef;
@@ -70,7 +72,7 @@ typedef struct s_data
 
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */
-// Fonctions d'initialisation
+// Initialization functions
 t_data			init_program(void);
 void			init_image(t_data *d);
 void			init_resize_image(t_data *d, int new_w, int new_h);
