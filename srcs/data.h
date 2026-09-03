@@ -1,5 +1,7 @@
 /* ************************************************************************** */
 /*   Space_Simulator — data.h                                                 */
+/*   Root t_data struct : window/GL state, textures, simulation, GPU          */
+/*   objects, and runtime settings.                                           */
 /* ************************************************************************** */
 
 #ifndef DATA_H
@@ -10,7 +12,7 @@
 /* ——— Lib Extern ——————————————————————————————————————————————————————————— */
 
 
-/* ——— Lib Graphique ———————————————————————————————————————————————————————— */
+/* ——— Lib Graphics ————————————————————————————————————————————————————————— */
 # include "../external/glad/include/glad/gl.h"
 # include <SDL2/SDL.h>
 
@@ -18,7 +20,7 @@
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
 # include "events/events.h"
 # include "../library/libft/libft.h"
-# include "simulation.h"
+# include "simulation/simulation.h"
 # include "parsing/parsing.h"
 
 
@@ -31,14 +33,6 @@
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
 typedef struct s_input	t_input;
 typedef struct s_hud_db	t_hud_db;
-
-
-/* ——— Struct texture ——————————————————————————————————————————————————————— */
-typedef struct s_texture
-{
-	char	*path;
-	GLuint	id;
-}	t_texture;
 
 
 /* ——— Struct data —————————————————————————————————————————————————————————— */
@@ -56,22 +50,29 @@ typedef struct s_data
 		t_texture		*tex;
 		int				tex_count;
 		int				tex_capacity;
-	t_simulation	sim;	
-	// Reglage
+	// Simulation
+		t_simulation	sim;
+	// GPU objects
+		GLuint			sphere_ssbo;
+		GLuint			ring_ssbo;
+		GLuint			light_ssbo;
+		GLuint			blackhole_ssbo;
+	// Settings
 		t_input			input;
 		unsigned int	nbr_ray;
 		unsigned int	wheel_coef;
 		float			exposure;
 		float			gamma;
-	// Camera
-		int				cam_target;
+		int				steps;
+		float			step_size;
+		bool			ss_file;
 	// HUD
 		t_hud_db		*hud_db;
 }	t_data;
 
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */
-// Fonctions d'initialisation
+// Initialization functions
 t_data			init_program(void);
 void			init_image(t_data *d);
 void			init_resize_image(t_data *d, int new_w, int new_h);

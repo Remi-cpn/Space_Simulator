@@ -27,6 +27,7 @@ l'intégration numérique de trajectoires.
 - [Contrôles](#contrôles)
 - [Rendu par shaders](#rendu-par-shaders)
 - [Théorie](#théorie)
+- [Éclairage](#éclairage)
 - [Roadmap](#roadmap)
 - [Pièges connus](#pièges-connus)
 - [Dette technique](#dette-technique--à-retravailler-plus-tard)
@@ -36,9 +37,26 @@ l'intégration numérique de trajectoires.
 
 ## Patch Note
 
+### V2 — Ce qui est fait
+
+Le raytracer classique entre en scène:
+
+- Format de scène `.ss` : sphères, anneaux et soleils texturés, réutilisant
+  l'intersection segment/objet du RT à chaque pas RK4.
+- Textures planétaires (mapping sphérique et radial/angulaire pour les
+  anneaux) avec cache de textures GPU.
+- Éclairage Phong (ambiante + diffuse + spéculaire) et ombre douce
+  analytique pour les soleils, sans lancer de rayon supplémentaire.
+- Shininess réglable par objet/soleil, en direct depuis le HUD.
+- HUD étendu à tous les paramètres de rendu (ombre, pas RK4, lumière
+  ambiante, shininess...), plus plusieurs bugs de layout GPU corrigés.
+- Nettoyage complet du code.
+- Cas validé : une planète/soleil derrière le trou noir
+  apparaît déformé en arc près de l'anneau de photons.
+
 ### V1 — Ce qui est fait
 
-Première version validée. Résumé, une ligne par fonctionnalité :
+Première version validée:
 
 - Pipeline de rendu 100 % compute shader (aucun vertex/fragment).
 - Caméra libre (déplacement + rotation).
@@ -131,9 +149,20 @@ l'équivalent de `libsdl2-dev`/`libgl1-mesa-dev` à la main).
 
 ### Lancer
 
+Prend en argument un fichier de scène (`.ss`, ex. `data_files/test.ss`) :
+
 ```sh
-./Space_Simulator
+./Space_Simulator data_files/test.ss
 ```
+
+### Scènes disponibles
+
+| Fichier | Contenu |
+|---------|---------|
+| `test.ss` | Scène minimale (sphère + soleil + trou noir) pour valider rapidement une modification. |
+| `blackhole.ss` | Trou noir seul, sans objet, pour isoler le rendu de la lentille gravitationnelle. |
+| `eclipse.ss` | Soleil petit et loin → bord d'ombre net (comparer avec `solar_system.ss`, voir [Éclairage](#éclairage)). |
+| `solar_system.ss` | Système solaire stylisé complet (8 planètes, anneaux, textures). |
 
 ### Autres cibles
 
@@ -155,6 +184,7 @@ l'équivalent de `libsdl2-dev`/`libgl1-mesa-dev` à la main).
 | `Entrée`            | Rentre dans la catégorie ciblée           |
 | `Retour arrière`    | Ressort de la catégorie courante          |
 | Molette souris      | Ajuste la valeur ciblée dans le HUD — le pas grandit avec le défilement continu (coefficient de vitesse `coef molette`, 1 à 5, lui-même visible/réglable dans le HUD) |
+| `R`                 | Recharge la scene apres deplacement des objects de la scene depuis le HUD |
 | `Échap`             | Quitter                                   |
 
 ### HUD de debug (terminal)
@@ -273,26 +303,60 @@ newtonienne classique.
 
 ---
 
+## Éclairage
+
+### Phong, pour les objets non-émissifs
+
+Un soleil rend sa couleur directement (aucun calcul de lumière — c'est une
+source, pas une surface éclairée). Tout le reste (planètes, anneaux) suit un
+modèle de Phong classique : ambiante + diffuse (loi de Lambert, l'angle
+entre la normale et la direction du soleil) + spéculaire (reflet concentré,
+angle entre le rayon réfléchi et la caméra).
+
+### Ombre douce analytique (soleil comme source étendue)
+
+Une formule **analytique**, sans tirage aléatoire ni
+lancer de rayon, inspirée de la méthode d'Orion Sky Lawlor pour les ombres
+douces sphère-sur-sphère. L'idée : comparer des **angles**, vus depuis le
+point éclairé, plutôt que chercher une intersection.
+
+- `angle_soleil = asin(rayon_soleil / distance_soleil)` — taille angulaire
+  apparente du soleil.
+- `angle_occulteur = asin(rayon_occulteur / distance_occulteur)` — taille
+  angulaire apparente de l'obstacle potentiel.
+- `angle_sep` — l'écart angulaire entre la direction du soleil et celle de
+  l'obstacle.
+- `d = distance_soleil × (angle_sep − angle_occulteur)` — à quel point le
+  bord de l'obstacle est loin du centre du soleil, converti en unité de
+  longueur à la distance du soleil.
+- `ombre = smoothstep(-1, 1, -d / rayon_soleil)` — le facteur d'ombre final
+  (0 = pleine lumière, 1 = ombre totale), avec une transition douce entre
+  les deux.
+
+Le dégradé rond vient directement de cette géométrie (deux disques, projetés
+en angle, qui se recouvrent progressivement) — aucun bruit, un bord net dès
+`nbr_ray = 1`. Implémentée dans `sphere_light_shadow`/`accumulate_sun_light`
+(`shader.comp`) ; les lumières ponctuelles classiques (`L` dans le `.ss`)
+gardent le lancer de rayon d'origine (`shadow_ray`), pas de notion de disque
+pour un point light.
+
+Limites actuelles : seuls les occulteurs **sphériques** sont gérés (pas les
+anneaux) ; si plusieurs objets occultent partiellement le même soleil, seule
+l'ombre la plus forte est retenue (`max`), pas une vraie union des zones
+occultées — négligeable tant qu'un seul obstacle significatif est présent à
+la fois, ce qui couvre l'immense majorité des scènes.
+
+La largeur de la pénombre est directement proportionnelle au rayon *réel*
+du soleil (`rayon_soleil` dans la formule) — une scène où le soleil est
+gros et proche des planètes (choix esthétique pour rester lisible à
+l'écran, voir `data_files/solar_system.ss`) produit donc une pénombre
+proportionnellement large, pas un défaut de la formule. Comparer avec
+`data_files/eclipse.ss` (soleil petit et loin) pour voir un bord net,
+comparable à une vraie ombre d'éclipse.
+
+---
+
 ## Roadmap
-
-### v2 — Intégration du RT : les objets entrent en scène
-
-> Le retour du raytracer classique, mais dans un espace courbé.
-
-- [ ] Format de scène hérité du `.rt` : sphères / planètes avec position,
-      rayon, texture ou couleur.
-- [ ] Intersection le long de la géodésique : chaque pas d'intégration est
-      un petit segment quasi-droit → test d'intersection classique
-      segment/objet, réutilisant les maths du RT.
-- [ ] Objets émissifs (soleils : couleur directe, sans éclairage) et objets
-      éclairés (planètes : Phong adapté — la source vue depuis le point
-      d'impact).
-- [ ] Textures planétaires (mapping sphérique, déjà connu du RT).
-- [ ] Cas spectaculaire à valider : une planète *derrière* le trou noir,
-      visible déformée en arc.
-
-**Validation :** une scène mixte — trou noir + planètes texturées + soleil —
-où les objets proches de l'horizon apparaissent distordus.
 
 ### v3 — Dynamique : l'espace s'anime
 
@@ -335,8 +399,27 @@ animation fluide temps réel.
 - **v2 — intersections manquées :** un pas trop grand peut « sauter »
   par-dessus un objet fin ; borner la taille du pas par la taille du plus
   petit objet proche.
+- **v2 — faux négatifs d'intersection sur la frontière entre deux pas :**
+  `hit_sphere` reprenait la garde anti-auto-intersection classique du RT
+  (`t < 0.0001` rejeté), utile quand un rayon repart *depuis* la surface
+  d'un objet (réflexion, ombre). Ici les segments testés partent d'un point
+  RK4 quelconque en plein espace, jamais d'une surface : la garde rejetait
+  des `t` valides pile à la coïncidence entre la fin d'un segment et le
+  début du suivant, laissant le rayon traverser l'objet sans le toucher sur
+  certains pixels — anneau de pixels « invisibles » autour des sphères,
+  dépendant de la distance à la caméra. Fix : garder seulement
+  `t < 0.0 || t > 1.0`, sans marge — la garde miniRT n'a pas de raison
+  d'être sur un segment qui ne part jamais d'une surface.
 - **Performance :** si le temps réel décroche, réduire la résolution interne
   et upscaler avant de toucher au pas d'intégration.
+- **Anneaux mal éclairés (normale à sens unique) :** un anneau a deux faces,
+  mais `ring.normal` ne pointe que d'un côté. `coef_dif = dot(normale,
+  direction_soleil)` peut donc être négatif pour la face pourtant visible
+  par la caméra, si `normal` pointe à l'opposé du soleil — l'anneau ne
+  reçoit alors que l'ambiante (quasi noir). Déjà repéré en commentaire dans
+  `accumulate_light`/`accumulate_sun_light` (`shader.comp`) ; fix identifié
+  mais pas encore appliqué : `abs(coef_dif)` quand l'objet touché est un
+  anneau.
 
 ## Dette technique — à retravailler plus tard
 
@@ -381,6 +464,50 @@ deviendra bloquant (pas des bugs à corriger dans l'immédiat).
   quart des invocations, sans divergence. Orthogonal au supersampling : les
   deux réglages (résolution interne, `nbr_ray`) pourront cohabiter et se
   piloter indépendamment selon la charge du moment.
+
+- **Trou noir traité à part, hors du buffer d'objets (v2) :** les objets de
+  scène (sphères, anneaux, planètes) sont testés par intersection le long
+  de la géodésique via un buffer GPU (SSBO) ; le trou noir n'y figure pas —
+  il courbe la trajectoire (uniforms `bh_mass`/`bh_pos` dédiés dans
+  `photon_trajectory`), il ne se "touche" pas comme les autres objets. Choix
+  délibéré : essayer d'unifier les deux dans une même structure maintenant
+  reviendrait à deviner la forme d'un problème pas encore posé — la v3
+  (N-corps, "les corps massifs s'attirent et orbitent", au pluriel) va de
+  toute façon réécrire en profondeur l'intégration de la courbure (`h2`
+  conservé suppose une masse centrale unique ; plusieurs masses cassent
+  cette hypothèse et demandent une somme de forces en 3D, pas juste un
+  tableau de plus) — la v4 (disque) et la v5 (Kerr) touchent aussi la partie
+  gravité/métrique, jamais la structure du buffer d'objets. Cohérent avec ça,
+  le trou noir est sorti de l'union `t_object` et traité comme les soleils :
+  son propre tableau dans `t_simulation`, pas un type d'objet parmi d'autres.
+
+- **Textures d'objets — tableau borné (`sampler2D obj_textures[N]`), pas
+  illimité comme côté C :** un `sampler2D` est un type opaque (lié à une
+  unité de texture matérielle), impossible à stocker dans un SSBO comme une
+  donnée — un objet référence sa texture par index dans ce tableau plutôt
+  que directement. `N` dimensionné sur le nombre réel d'unités de texture
+  de la machine, pas un chiffre arbitraire — largement suffisant pour une
+  scène planétaire. Écarté : bindless textures (lèverait la limite, mais
+  l'extension n'est pas dans le build glad actuel, portabilité incertaine
+  hors NVIDIA) et texture array (lèverait aussi la limite, mais impose la
+  même résolution à toutes les textures — mauvais si une scène mélange une
+  grosse planète et une petite lune).
+
+- **Aliasing de texture aux silhouettes (pas de mipmapping) :** `texture()`
+  dans un compute shader n'a pas accès aux dérivées d'écran implicites
+  (contrairement au fragment shader, qui les calcule en évaluant des quads de
+  2×2 pixels) — impossible donc de choisir automatiquement un mip level.
+  Chaque échantillon retombe toujours sur le mip 0, quelle que soit la
+  distance ou l'angle d'incidence. Symptôme observé : motif « en escalier »
+  crénelé, spécifiquement sur les objets texturés, à la jonction entre deux
+  sphères où l'UV varie très vite d'un pixel à l'autre (silhouette d'une
+  planète lointaine derrière une planète proche) — confirmé en comparant la
+  même scène avec/sans texture (lisse sans, crénelé avec) et en forçant
+  `textureLod(..., 0.0)` explicitement (aucun changement, preuve que c'était
+  déjà le comportement par défaut). Vraie solution : ray differentials ou ray
+  cones (calculer une empreinte UV approximative par pixel à partir de la
+  distance parcourue, puis choisir un mip level explicite) — pas implémenté
+  pour l'instant.
 
 ## Références à consulter
 

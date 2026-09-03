@@ -1,5 +1,6 @@
 /* ************************************************************************** */
 /*   Space_Simulator — main.c                                                 */
+/*   Entry point : parses argv, builds the scene, runs the render loop.       */
 /* ************************************************************************** */
 
 #include "data.h"
@@ -9,8 +10,8 @@
 #include "debug/debug.h"
 #include "shaders/shader.h"
 
-// Boucle de rendu principale : evenements, rendu GPU, deplacement
-// camera, swap de la fenetre.
+/*	Main render loop : events, GPU rendering, camera movement,
+	window swap.	*/
 static void	update(t_data *d)
 {
 	bool	running;
@@ -21,25 +22,27 @@ static void	update(t_data *d)
 		running = lisen_poll_event(d);
 		params_gl(d);
 		update_cam(d, 0.6, 0.1);
-		// Envoi l'image sur l'ecran
+		// Sends the image to the screen
 		SDL_GL_SwapWindow(d->win);
 	}
 
 }
 
-// Initialise le programme, construit la scene, puis lance la boucle
-// de rendu jusqu'a la fermeture.
+/*	Initializes the program, builds the scene, then runs the render
+	loop until closing.	*/
 int	main(int ac, char **av)
 {
 	t_data	d;
 
-	(void)ac;
-	// if (ac != 2 && ac != 3)
-	// 	return (1);
+	if (ac != 2)
+	{
+		ft_print_error((ac < 2) ? "Need file name." : "Too many args.");
+		return (1);
+	}
 
 	d = init_program();
-	parsing(&d, NULL);
-	(void)av;
+
+	parsing(&d, av[1]);
 
 	update(&d);
 

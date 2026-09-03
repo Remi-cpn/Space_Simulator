@@ -2,10 +2,11 @@
 
 #define GOLDEN_NBR_X 0.754877666
 #define GOLDEN_NBR_Y 0.569840296
+#define KS 0.5
+#define RENDER_DIST 5000.0
 
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(binding = 0, rgba8) uniform image2D outImg;
-uniform sampler2D skybox;
 
 // Camera
 uniform vec3 	cam_origin;
@@ -13,35 +14,431 @@ uniform vec3 	cam_corner;
 uniform vec3 	cam_hor;
 uniform vec3 	cam_ver;
 
-// Black Hole
-uniform float	bh_mass;
-uniform vec3	bh_pos;	// position du trou noir
-uniform int		steps;	// nombre de pas RK4
+// Black hole
+uniform int		steps;	// number of RK4 steps
 uniform float	step_size;	// h
 
-// Rayon par pixels
+// Rays per pixel
 uniform int		nbr_ray;
 
-// Rendu viseul
-uniform float exposure;
-uniform float gamma;
+// Light
+uniform vec3	ambient_color;
+uniform float 	ambient_ratio;
+uniform int		nbr_light;
+uniform float	shadow_dist;
+
+// Visual rendering
+uniform float 	exposure;
+uniform float 	gamma;
+
+// Textures / obj_textures[0] = skybox (unit 0), objects from 1 onward
+uniform sampler2D obj_textures[16];
+
+// Object struct respecting 16-bit padding
+struct t_gpu_sphere
+{
+	vec3	center;
+	float	radius;
+	vec4	color;
+	int		emissive;
+	float	intensity; // sun only (light source)
+	int		tex_index; // -1 = no texture, flat color
+	float	shininess;
+};
+
+layout(std430, binding = 1) readonly buffer SphereBuffer
+{
+	t_gpu_sphere	spheres[];
+};
+
+struct t_gpu_ring
+{
+	vec3	center;
+	float	inner_rad;
+	vec3	normal;
+	float	outer_rad;
+	vec4	color;
+	int		tex_index;
+	float	shininess;
+	float	pad0;
+	float	pad1;
+};
+
+layout(std430, binding = 2) readonly buffer RingBuffer
+{
+	t_gpu_ring	ring[];
+};
+
+struct t_gpu_light
+{
+	vec3	center;
+	float	intensity;
+	vec4	color;
+};
+
+layout(std430, binding = 3) readonly buffer LightBuffer
+{
+	t_gpu_light light[];
+};
+
+struct t_gpu_blackhole
+{
+	vec3	center;
+	float	mass;
+};
+
+layout(std430, binding = 4) readonly buffer BlackholeBuffer
+{
+	t_gpu_blackhole	blackholes[];
+};
 
 
-/* ——— choix du pixel sur le skybox —————————————————————————————————————————————————————————— */
+/* ——— Skybox ———————————————————————————————————————————————————————————————————————————— */
 
+/*	Samples the starry sky (equirectangular mapping) in the given
+	direction. Same lon/lat formula as get_base_color.	*/
 vec4 sample_skybox(vec3 direction)
 {
 	float lon = atan(direction.z, direction.x);
 	float lat = asin(direction.y);
 	vec2 sky_uv = vec2(lon / (2.0 * 3.14159265) + 0.5, lat / 3.14159265 + 0.5);
-	return texture(skybox, sky_uv);
+	return texture(obj_textures[0], sky_uv);
 }
 
 
-/* ——— Calcul de la trajectoire d'un photon —————————————————————————————————————————————————————————— */
-/* Intégration directe en 3D (position + vitesse), pas de réduction 2D/reconstruction —
-   approche "starless" (rantonels/starless), évite toute construction de base (e1/e2)
-   et donc toute singularité de type produit vectoriel proche de zéro. */
+
+/* ——— Intersection calculations ——————————————————————————————————————————————————————————— */
+
+#define OBJ_TYPE_SPHERE 0
+#define OBJ_TYPE_RING   1
+
+/*	Ray/segment - sphere intersection (classic quadratic equation).
+	t_max bounds the test to a segment rather than an infinite ray.	*/
+bool hit_sphere(vec3 ray_origin, vec3 ray_dir, t_gpu_sphere sph, float t_max, out float t)
+{
+	vec3 oc = ray_origin - sph.center;
+	float a = dot(ray_dir, ray_dir);
+	float b = dot(ray_dir, oc);
+	float c = dot(oc, oc) - sph.radius * sph.radius;
+	float disc = b * b - a * c;
+	if (disc < 0.0)
+		return false;
+	t = (-b - sqrt(disc)) / a;
+	// Since we're testing a segment and not an infinite ray, add t > t_max check
+	if (t < 0.0 || t > t_max)
+		t = (-b + sqrt(disc)) / a;
+	if (t < 0.0 || t > t_max)
+		return false;
+	return (true);
+}
+
+/*	Ray/segment - ring plane intersection, then checks that the point
+	falls between inner_rad and outer_rad.	*/
+bool hit_ring(vec3 ray_origin, vec3 ray_dir, t_gpu_ring rg, float t_max, out float t)
+{
+	float dir = dot(ray_dir, rg.normal);
+	if (abs(dir) < 0.0001)
+		return false;
+	t = dot(rg.center - ray_origin, rg.normal) / dir;
+	if (t < 0.0 || t > t_max)
+		return false;
+	vec3 hit = ray_origin + t * ray_dir;
+	float diff = length(hit - rg.center);
+	return (diff >= rg.inner_rad && diff <= rg.outer_rad);
+}
+
+/*	Shared sphere/ring test (segment or shadow ray) : returns the
+	closest object, never its color. skip_emissive ignores suns.	*/
+bool check_hit(vec3 ray_origin, vec3 ray_dir, float t_max, bool skip_emissive,
+		out float best_t, out int type, out int index)
+{
+	bool	hit;
+	float	t;
+
+	best_t = t_max + 1.0; // > t_max, so "nothing found" initially
+	hit = false;
+	for (int i = 0; i < spheres.length(); i++)
+		if (!(skip_emissive && spheres[i].emissive == 1)
+			&& hit_sphere(ray_origin, ray_dir, spheres[i], t_max, t) && t < best_t)
+		{
+			best_t = t;
+			type = OBJ_TYPE_SPHERE;
+			index = i;
+			hit = true;
+		}
+	for (int i = 0; i < ring.length(); i++)
+		if (hit_ring(ray_origin, ray_dir, ring[i], t_max, t) && t < best_t)
+		{
+			best_t = t;
+			type = OBJ_TYPE_RING;
+			index = i;
+			hit = true;
+		}
+	return (hit);
+}
+
+/*	Flat color of a hit object (fallback without a texture).	*/
+vec4 get_hit_color(int type, int index)
+{
+	if (type == OBJ_TYPE_SPHERE)
+		return (spheres[index].color);
+	return (ring[index].color);
+}
+
+/*	Normal at the hit point (sphere : radial ; ring : fixed plane
+	normal).	*/
+vec3 get_hit_normal(vec3 hit_point, int type, int index)
+{
+	if (type == OBJ_TYPE_SPHERE)
+		return (normalize(hit_point - spheres[index].center));
+	return (ring[index].normal);
+}
+
+/*	Specular exponent of the hit object (sphere or ring).	*/
+float get_shininess(int type, int index)
+{
+	if (type == OBJ_TYPE_SPHERE)
+		return (spheres[index].shininess);
+	return (ring[index].shininess);
+}
+
+/*	Color at the hit point : texture if tex_index >= 0 (lon/lat mapping
+	for a sphere, radial/angular for a ring), otherwise flat color.	*/
+vec4 get_base_color(int type, int index, vec3 hit_point)
+{
+	vec3	dir;
+	vec3	arbitrary;
+	vec3	u_axis;
+	vec3	v_axis;
+	vec3	to_hit;
+	float	u;
+	float	v;
+
+	if (type == OBJ_TYPE_SPHERE && spheres[index].tex_index >= 0)
+	{
+		dir = normalize(hit_point - spheres[index].center);
+		u = atan(dir.z, dir.x) / (2.0 * 3.14159265) + 0.5;
+		v = asin(dir.y) / 3.14159265 + 0.5;
+		return (texture(obj_textures[spheres[index].tex_index], vec2(u, v)));
+	}
+	if (type == OBJ_TYPE_RING && ring[index].tex_index >= 0)
+	{
+		to_hit = hit_point - ring[index].center;
+		arbitrary = vec3(0.0, 1.0, 0.0);
+		if (abs(ring[index].normal.y) > 0.99)
+			arbitrary = vec3(1.0, 0.0, 0.0);
+		u_axis = normalize(cross(arbitrary, ring[index].normal));
+		v_axis = cross(ring[index].normal, u_axis);
+		u = clamp((length(to_hit) - ring[index].inner_rad)
+				/ (ring[index].outer_rad - ring[index].inner_rad), 0.0, 1.0);
+		v = atan(dot(to_hit, v_axis), dot(to_hit, u_axis))
+				/ (2.0 * 3.14159265) + 0.5;
+		return (texture(obj_textures[ring[index].tex_index], vec2(u, v)));
+	}
+	return (get_hit_color(type, index));
+}
+
+
+
+/* ——— Light manager —————————————————————————————————————————————————————————————————————— */
+
+/*	Ray-traced shadow for a classic point light, advancing obstacle by
+	obstacle until full shadow or the light is reached.	*/
+float shadow_ray(vec3 hit_pos, vec3 hit_normal, vec3 light_dir, float light_norm)
+{
+	float	shadow;
+	vec3	origin;
+	float	best_t;
+	int		type;
+	int		index;
+	vec4	color;
+
+	shadow = 0.0;
+	origin = hit_pos + hit_normal * 0.01;
+	while (shadow < 1.0)
+	{
+		if (!check_hit(origin, light_dir, min(light_norm, shadow_dist), true,
+				best_t, type, index)
+			|| best_t <= 0.0)
+			break;
+		color = get_hit_color(type, index);
+		shadow += (1.0 - shadow) * color.a;
+		// Advance to the hit point found (not to hit_pos) : otherwise
+		// we keep hitting the same obstacle indefinitely.
+		origin = origin + best_t * light_dir + light_dir * 0.001;
+	}
+	return (shadow);
+}
+
+/*	Shared computation for a point light (light[] or sun) : diffuse +
+	specular, called from both loops in light_manager.	*/
+void accumulate_light(vec3 hit_pos, vec3 hit_normale, vec3 light_pos,
+		vec3 light_color, float light_intensity, float shininess,
+		inout vec3 diffuse, inout vec3 specular)
+{
+	vec3 light_dir = light_pos - hit_pos;
+	float light_norm = length(light_dir);
+	light_dir = normalize(light_dir);
+	float coef_dif = dot(hit_normale, light_dir);
+	// In minirt I had to handle a special case for ring here
+	//if (hit->object->type == OBJ_RING)
+	//ctx.coef_d = fabs(ctx.coef_d);
+	if (coef_dif > 0.0)
+	{
+		// Applying the light
+		float shadow = shadow_ray(hit_pos, hit_normale, light_dir, light_norm);
+
+		//Diffuse
+		float factor = coef_dif * light_intensity * (1.0 - shadow);
+		diffuse += light_color * factor;
+
+		// Specular
+		vec3 reflects = normalize(hit_normale * 2.0 * coef_dif - light_dir);
+		vec3 view_dir = normalize(cam_origin - hit_pos);
+		float coef_spec = dot(reflects, view_dir);
+		if (coef_spec > 0.001)
+		{
+			coef_spec = pow(coef_spec, shininess) * KS * light_intensity * (1.0 - shadow);
+			specular += light_color * coef_spec;
+		}
+	}
+}
+
+/*	Analytic soft shadow (Lawlor method) : compares angles instead of
+	casting rays, spherical occluders only.	*/
+float sphere_light_shadow(vec3 hit_pos, vec3 light_pos, float light_radius,
+		int self_index)
+{
+	vec3	light_dir;
+	float	light_dist;
+	vec3	sphere_dir;
+	float	sphere_dist;
+	float	d;
+	float	w;
+	float	shadow;
+
+	light_dir = (light_pos - hit_pos);
+	light_dist = length(light_dir);
+	light_dir = light_dir / light_dist;
+	shadow = 0.0;
+	for (int i = 0; i < spheres.length(); i++)
+	{
+		if (spheres[i].emissive == 1 || i == self_index)
+			continue;
+		sphere_dir = spheres[i].center - hit_pos;
+		sphere_dist = length(sphere_dir);
+		sphere_dir = sphere_dir / sphere_dist;
+		d = light_dist * (asin(min(1.0, length(cross(light_dir, sphere_dir))))
+				- asin(min(1.0, spheres[i].radius / sphere_dist)));
+		w = smoothstep(-1.0, 1.0, -d / light_radius);
+		w *= smoothstep(0.0, 0.2, dot(light_dir, sphere_dir));
+		w *= smoothstep(0.0, spheres[i].radius, light_dist - sphere_dist);
+		shadow = max(shadow, w);
+	}
+	return (shadow);
+}
+
+/*	Same shape as accumulate_light, but the shadow is computed
+	analytically (sphere_light_shadow) instead of via ray casting.	*/
+void accumulate_sun_light(vec3 hit_pos, vec3 hit_normale, vec3 light_pos,
+		vec3 light_color, float light_intensity, float light_radius,
+		float shininess, int self_index,
+		inout vec3 diffuse, inout vec3 specular)
+{
+	vec3 light_dir = normalize(light_pos - hit_pos);
+	float coef_dif = dot(hit_normale, light_dir);
+	if (coef_dif > 0.0)
+	{
+		float shadow = sphere_light_shadow(hit_pos, light_pos, light_radius,
+				self_index);
+
+		float factor = coef_dif * light_intensity * (1.0 - shadow);
+		diffuse += light_color * factor;
+
+		vec3 reflects = normalize(hit_normale * 2.0 * coef_dif - light_dir);
+		vec3 view_dir = normalize(cam_origin - hit_pos);
+		float coef_spec = dot(reflects, view_dir);
+		if (coef_spec > 0.001)
+		{
+			coef_spec = pow(coef_spec, shininess) * KS * light_intensity * (1.0 - shadow);
+			specular += light_color * coef_spec;
+		}
+	}
+}
+
+/*	Combines ambient + diffuse + specular over all lights/suns, then
+	applies the result to the base color.	*/
+vec4 light_manager(vec3 hit_pos, vec3 hit_normale, vec4 base_color,
+		int self_index, float shininess)
+{
+	vec3 diffuse = vec3(0, 0, 0);
+	vec3 ambient = vec3(0, 0, 0) + ambient_color * ambient_ratio;
+	vec3 specular = vec3(0, 0, 0);
+
+	// Loop over the lights
+	for (int i = 0; i < nbr_light; ++i)
+		accumulate_light(hit_pos, hit_normale, light[i].center,
+			light[i].color.rgb, light[i].intensity, shininess,
+			diffuse, specular);
+
+	// Loop over the suns (analytic shadow, no ray)
+	for (int i = 0; i < spheres.length(); ++i)
+		if (spheres[i].emissive == 1)
+			accumulate_sun_light(hit_pos, hit_normale, spheres[i].center,
+				spheres[i].color.rgb, spheres[i].intensity, spheres[i].radius,
+				shininess, self_index, diffuse, specular);
+
+	// Set light
+	vec3 light_color = ambient + diffuse + specular;
+	if (light_color.r > 1.0)
+		light_color.r = 1.0;
+	if (light_color.g > 1.0)
+		light_color.g = 1.0;
+	if (light_color.b > 1.0)
+		light_color.b = 1.0;
+
+	base_color.rgb = base_color.rgb * light_color.rgb;
+
+	return (base_color);
+}
+
+
+
+/* ——— Testing objects hit along a segment ——————————————————————————————————————————————— */
+
+/*	Tests the closest intersection along a segment and computes its
+	final color (direct if emissive, otherwise via light_manager).	*/
+bool test_segment_objects(vec3 ray_origin, vec3 ray_dir, out vec4 hit_color)
+{
+	float	best_t;
+	int		type;
+	int		index;
+	vec3	hit_point;
+	vec3	normal;
+
+	if (!check_hit(ray_origin, ray_dir, 1.0, false, best_t, type, index))
+		return false;
+	hit_point = ray_origin + best_t * ray_dir;
+	if (type == OBJ_TYPE_SPHERE && spheres[index].emissive == 1)
+		hit_color = get_base_color(type, index, hit_point);
+	else
+	{
+		normal = get_hit_normal(hit_point, type, index);
+		hit_color = light_manager(hit_point, normal,
+				get_base_color(type, index, hit_point),
+				type == OBJ_TYPE_SPHERE ? index : -1,
+				get_shininess(type, index));
+	}
+	return true;
+}
+
+
+
+
+
+/* ——— Photon trajectory calculation ——————————————————————————————————————————————————————— */
+/* Direct 3D integration (position+velocity), "starless" approach --
+   avoids building any basis (e1/e2) and its zero-cross-product singularity. */
 
 struct t_state
 {
@@ -49,6 +446,7 @@ struct t_state
 	vec3	vel;
 };
 
+/*	Component-wise addition of two states (position + velocity).	*/
 t_state add_state(t_state a, t_state b)
 {
 	t_state	r;
@@ -58,6 +456,7 @@ t_state add_state(t_state a, t_state b)
 	return (r);
 }
 
+/*	Multiplies a state (position + velocity) by a scalar.	*/
 t_state scale_state(t_state a, float s)
 {
 	t_state	r;
@@ -67,7 +466,7 @@ t_state scale_state(t_state a, float s)
 	return (r);
 }
 
-// F(r) = -3M h² / r⁴ (forme vectorielle de l'équation de Binet)
+/*	F(r) = -3M h² / r⁴ (vector form of the Binet equation)	*/
 t_state orbit_derivative(t_state s, float h2, float M)
 {
 	t_state	d;
@@ -79,7 +478,7 @@ t_state orbit_derivative(t_state s, float h2, float M)
 	return (d);
 }
 
-// Calcul de RK4
+/*	RK4 step.	*/
 t_state rk4_step(t_state s, float h2, float M, float h)
 {
 	t_state	k1;
@@ -97,6 +496,8 @@ t_state rk4_step(t_state s, float h2, float M, float h)
 	return (add_state(s, scale_state(sum, h / 6.0)));
 }
 
+/*	Integrates the photon's geodesic in 3D (RK4, starless approach)
+	and tests objects at each step until horizon, escape, or failure.	*/
 vec4 photon_trajectory(vec3 dir)
 {
 	t_state	s;
@@ -105,44 +506,70 @@ vec4 photon_trajectory(vec3 dir)
 	float	rs;
 	float	r_max;
 	float	r;
+	vec3	bh_pos;
+	float	bh_mass;
+
+	// Called only if blackholes.length() > 0
+	bh_pos = blackholes[0].center;
+	bh_mass = blackholes[0].mass;
 
 	s.pos = cam_origin - bh_pos;
 	s.vel = dir;
 
 	hvec = cross(s.pos, s.vel);
-	h2 = dot(hvec, hvec); // moment angulaire² conservé
+	h2 = dot(hvec, hvec);
 
 	rs = 2.0 * bh_mass;
 
-	// distance d'evasion : toujours r0 + une marge fixe, jamais un multiple de r0
-	// (sinon la distance a parcourir explose avec r0 et la perf s'effondre au loin)
+	// escape distance : always r0 + a fixed margin, never a multiple of r0
+	// (otherwise the distance to travel explodes with r0 and perf tanks far away)
 	r_max = length(s.pos) + 50.0 * rs;
 
 	for (int i = 0; i < steps; i++)
 	{
 		r = length(s.pos);
+		vec3 pos_prev = s.pos;
 		s = rk4_step(s, h2, bh_mass, step_size * clamp(r / rs, 0.1, 200.0));
 		r = length(s.pos);
 
+		// Objects are tested in absolute coordinates (the .ss ones), so
+		// the segment (relative to the black hole) is translated to world space.
+		vec4 obj_color;
+		vec3 ray_dir = s.pos - pos_prev;
+		if (test_segment_objects(pos_prev + bh_pos, ray_dir, obj_color))
+			return obj_color;
+
 		if (r < rs)
 		{
-			// Horizon franchi -> noir
+			// Horizon crossed -> black
 			return vec4 (0, 0, 0, 1);
 		}
 		if (r > r_max)
 		{
-			// Évasion -> échantillonner le skybox avec la vitesse finale
+			// Escape -> sample the skybox with the final velocity
 			return sample_skybox(normalize(s.vel));
 		}
 	}
-	// Si on arrive ici sans être sorti : budget de pas épuisé
+	// If we get here without exiting : step budget exhausted
 	return vec4 (0, 0, 0, 1);
 }
 
+/*	Classic straight-line trajectory (no black hole) : tests objects
+	along the ray, otherwise returns the sky.	*/
+vec4 classic_trajectory(vec3 dir)
+{
+	vec4	obj_color;
+
+	if (test_segment_objects(cam_origin, dir * RENDER_DIST, obj_color))
+		return obj_color;
+	return sample_skybox(normalize(dir));
+}
 
 
 /* ——— Main —————————————————————————————————————————————————————————— */
 
+/*	Entry point of the compute shader : one pixel per invocation, N
+	supersampled rays, averaged then exposed/gamma-corrected.	*/
 void main()
 {
 	ivec2	pixel = ivec2(gl_GlobalInvocationID.xy);
@@ -151,18 +578,29 @@ void main()
 	if (pixel.x >= size.x || pixel.y >= size.y || size.x == 0 || size.y == 0)
 		return;
 
-	// Boucle d'envoi de rayon par pixel
+	// Loop firing rays per pixel
 	vec4	color = vec4(0, 0, 0, 0);
 	vec2	inv_size = 1.0 / vec2(size);
 	for (int i = 0; i < nbr_ray; i++)
 	{
 		vec2	offset = fract(vec2(i) * vec2(GOLDEN_NBR_X, GOLDEN_NBR_Y));
+
 		vec2	uv = (vec2(pixel) + offset) * inv_size;
+		// Flips the display to match +x on the right.
+		uv.x = 1.0 - uv.x;
+
 		vec3	dir = normalize(cam_corner + uv.x * cam_hor + uv.y * cam_ver - cam_origin);
-		color += photon_trajectory(dir);
+
+		// Classic raytracer vs new raytracer
+		if (blackholes.length() > 0)
+			color += photon_trajectory(dir);
+		else
+			color += classic_trajectory(dir);
 	}
 
+	// Gamma
 	color = color / nbr_ray;
 	color.rgb = pow(color.rgb * exposure, vec3(1.0 / gamma));
+
 	imageStore(outImg, pixel, color);
 }

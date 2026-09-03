@@ -21,39 +21,44 @@ LIBFT_DIR	= library/libft
 LIBRT_DIR	= library/librt
 LIBFT_A		= $(LIBFT_DIR)/libft.a
 LIBRT_A		= $(LIBRT_DIR)/librt.a
-LIB			= $(LIBFT_A) $(LIBRT_A)
+LIB			= $(LIBRT_A) $(LIBFT_A)
 
 
 # ——— Sous-dossiers sources —————————————————————————————————————————————————— #
-SUB_DIRS 	:= exit init debug shaders events parsing moves
+SUB_DIRS 	:= exit core debug shaders events parsing simulation
 
 
 # ——— Sources ———————————————————————————————————————————————————————————————— #
-SRC_INIT	= init_program.c \
+SRC_CORE	= init_program.c \
 			  init_image.c \
-			  init_texture.c \
-			  init_simulation.c \
-			  init_hud.c
+			  init_texture.c
 
 SRC_EXIT	= exit_program.c
 
 SRC_DEBUG	= gl_debug.c \
 			  hud.c \
-			  hud_db.c
+			  hud_db.c \
+			  init_hud.c
 
-SRC_SHADER	= shader.c
+SRC_SHADER	= shader.c \
+			  build_buffer.c
 
 SRC_EVENTS	= poll_events.c
 
 SRC_PARSING	= parsing.c \
-			  format/format_unique.c
+			  parsing_file.c \
+			  parsing_texture.c \
+			  utils.c \
+			  format/format_unique.c \
+			  format/format_ss.c
 
-SRC_MOVES	= camera.c
+SRC_SIMULATION	= init_simulation.c \
+				  camera.c
 
 VPATH 		:= $(SRC_DIR) \
          		$(addprefix $(SRC_DIR)/, $(SUB_DIRS))
 
-SRCS		= srcs/main.c external/glad/src/gl.c $(SRC_INIT) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS) $(SRC_PARSING) $(SRC_MOVES)
+SRCS		= srcs/main.c external/glad/src/gl.c $(SRC_CORE) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS) $(SRC_PARSING) $(SRC_SIMULATION)
 
 OBJ			= ${SRCS:%.c=$(OBJ_DIR)/%.o}
 
