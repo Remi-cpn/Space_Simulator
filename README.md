@@ -37,9 +37,26 @@ l'intégration numérique de trajectoires.
 
 ## Patch Note
 
+### V2 — Ce qui est fait
+
+Le raytracer classique entre en scène:
+
+- Format de scène `.ss` : sphères, anneaux et soleils texturés, réutilisant
+  l'intersection segment/objet du RT à chaque pas RK4.
+- Textures planétaires (mapping sphérique et radial/angulaire pour les
+  anneaux) avec cache de textures GPU.
+- Éclairage Phong (ambiante + diffuse + spéculaire) et ombre douce
+  analytique pour les soleils, sans lancer de rayon supplémentaire.
+- Shininess réglable par objet/soleil, en direct depuis le HUD.
+- HUD étendu à tous les paramètres de rendu (ombre, pas RK4, lumière
+  ambiante, shininess...), plus plusieurs bugs de layout GPU corrigés.
+- Nettoyage complet du code.
+- Cas validé : une planète/soleil derrière le trou noir
+  apparaît déformé en arc près de l'anneau de photons.
+
 ### V1 — Ce qui est fait
 
-Première version validée. Résumé, une ligne par fonctionnalité :
+Première version validée:
 
 - Pipeline de rendu 100 % compute shader (aucun vertex/fragment).
 - Caméra libre (déplacement + rotation).
@@ -340,30 +357,6 @@ comparable à une vraie ombre d'éclipse.
 ---
 
 ## Roadmap
-
-### v2 — Intégration du RT : les objets entrent en scène
-
-> Le retour du raytracer classique, mais dans un espace courbé.
-
-- [x] Format de scène : `.ss`, sphères / planètes / anneaux / soleils avec
-      nom, position, rayon, couleur, texture (chemin parsé, pas encore
-      échantillonné dans le shader).
-- [x] Intersection le long de la géodésique : chaque pas d'intégration est
-      un petit segment quasi-droit → test d'intersection classique
-      segment/objet (sphère et anneau), réutilisant les maths du RT, rejoué
-      à chaque pas RK4 dans `photon_trajectory`. Objets uploadés en SSBO
-      (scène statique pour l'instant, un seul upload au chargement).
-- [x] Objets émissifs (soleils : couleur directe, sans éclairage) et objets
-      éclairés (planètes : Phong — ambiante + diffuse + spéculaire, calculé
-      au point d'impact). Ombre douce analytique pour les soleils (voir
-      [Éclairage](#éclairage)) plutôt qu'un point light tout-ou-rien.
-- [x] Textures planétaires (mapping sphérique, déjà connu du RT).
-- [x] Cas spectaculaire validé : une planète/soleil derrière le trou noir
-      apparaît déformé en arc près de l'anneau de photons (confirmé
-      visuellement).
-
-**Validation :** une scène mixte — trou noir + planètes texturées + soleil —
-où les objets proches de l'horizon apparaissent distordus.
 
 ### v3 — Dynamique : l'espace s'anime
 
