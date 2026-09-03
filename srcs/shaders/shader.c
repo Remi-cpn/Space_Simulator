@@ -1,5 +1,7 @@
 /* ************************************************************************** */
 /*   Space_Simulator — shader.c                                               */
+/*   Compiles/links the compute shader, sends the per-frame uniforms,         */
+/*   dispatches and blits the result to the screen.                           */
 /* ************************************************************************** */
 
 #include "shader.h"
@@ -14,10 +16,8 @@ void	init_object_buffers(t_data *d)
 	glGenBuffers(1, &d->blackhole_ssbo);
 }
 
-// Fixe une fois pour toutes obj_textures[i] -> unite de texture i (relation
-// statique, independante des textures reellement chargees). Les textures
-// elles-memes sont liees a ces unites plus tard, par upload_sphere_buffer/
-// upload_ring_buffer, a chaque (re)chargement de scene.
+/*	Fixes obj_textures[i] -> unit i once and for all (static mapping).
+	Textures are bound to these units later, on each (re)load.	*/
 void	init_obj_texture_units(t_data *d)
 {
 	char	name[24];
@@ -33,19 +33,19 @@ void	init_obj_texture_units(t_data *d)
 	}
 }
 
-// Envoie les uniforms de la frame courante au shader et dispatch le
-// compute shader, puis blit le resultat a l'ecran.
+/*	Sends the current frame's uniforms to the shader and dispatches
+	the compute shader, then blits the result to the screen.	*/
 void	params_gl(t_data *d)
 {
-		// Creation de l'image
+		// Image creation
 		glUseProgram(d->program);
 
-		// Blinde ce qui est necessaire a chaque fram
+		// Ensures what's needed every frame is set
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, d->sim.sky.tex);
 
-		// Set uniform de shader.comp (obj_textures[0] -> skybox, fixe une
-		// fois pour toutes par init_obj_texture_units)
+		// Sets shader.comp uniforms (obj_textures[0] -> skybox, fixed once
+		// and for all by init_obj_texture_units)
 		glUniform3f(glGetUniformLocation(d->program, "cam_origin"), d->sim.cam.origin.x, d->sim.cam.origin.y, d->sim.cam.origin.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_corner"), d->sim.cam.corner.x, d->sim.cam.corner.y, d->sim.cam.corner.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_hor"),    d->sim.cam.hor.x,    d->sim.cam.hor.y,    d->sim.cam.hor.z);
@@ -61,19 +61,19 @@ void	params_gl(t_data *d)
 		glUniform1f(glGetUniformLocation(d->program, "ambient_ratio"), d->sim.ambient_ratio);
 
 
-		// Dispatch un peu comme du multi threading
+		// Dispatch, a bit like multithreading
 		glDispatchCompute(d->win_w/16, d->win_h/16, 1);
-		// Control que la generation de l'image est finit
+		// Ensures the image generation is finished
 		glMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
 
-		// Copie l'image calculée par le compute shader pour l'écran
+		// Copies the image computed by the compute shader to the screen
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, d->fbo);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		glBlitFramebuffer(0, 0, d->win_w, d->win_h, 0, 0, d->win_w, d->win_h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
-// Lit un fichier shader entier en memoire (open/fstat/read), sans passer
-// par fopen/fread : on connait la taille exacte via fstat avant de lire.
+/*	Reads an entire shader file into memory (open/fstat/read), without
+	fopen/fread : the exact size is known via fstat before reading.	*/
 char	*read_source_compute_shader(t_data *d, char *shader_name)
 {
 	int			fd;
@@ -118,8 +118,8 @@ char	*read_source_compute_shader(t_data *d, char *shader_name)
 	return (buffer);
 }
 
-// Compile la source GLSL en compute shader et verifie chaque etape :
-// compilation, puis link du program renvoye (pret a etre dispatche).
+/*	Compiles the GLSL source into a compute shader and checks every
+	step : compilation, then linking of the returned program.	*/
 GLuint	create_compute_shader(t_data *d, char *shader_name)
 {
 	GLuint			shader_id;

@@ -1,5 +1,7 @@
 /* ************************************************************************** */
 /*   Space_Simulator — shader.h                                               */
+/*   GPU structs (C mirrors of the GLSL structs) and prototypes for the       */
+/*   compute shader's compile/upload functions.                               */
 /* ************************************************************************** */
 
 #ifndef SHADER_H
@@ -14,8 +16,8 @@
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
 #include "../data.h"
 
-// Doit correspondre a obj_textures[N] dans shader.comp -- aucun mecanisme
-// de partage C/GLSL dans ce projet, a garder synchronise a la main.
+// Must match obj_textures[N] in shader.comp -- no C/GLSL sharing
+// mechanism in this project, keep in sync by hand.
 # define OBJ_TEXTURES_MAX 16
 
 /* ——— Struct GPU ——————————————————————————————————————————————————————————— */

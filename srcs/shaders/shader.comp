@@ -14,35 +14,35 @@ uniform vec3 	cam_corner;
 uniform vec3 	cam_hor;
 uniform vec3 	cam_ver;
 
-// Black Hole
-uniform int		steps;	// nombre de pas RK4
+// Black hole
+uniform int		steps;	// number of RK4 steps
 uniform float	step_size;	// h
 
-// Rayon par pixels
+// Rays per pixel
 uniform int		nbr_ray;
 
-// Lumiere
+// Light
 uniform vec3	ambient_color;
 uniform float 	ambient_ratio;
 uniform int		nbr_light;
 uniform float	shadow_dist;
 
-// Rendu viseul
+// Visual rendering
 uniform float 	exposure;
 uniform float 	gamma;
 
-// Textures -- obj_textures[0] = skybox (unite 0), objets a partir de 1
+// Textures -- obj_textures[0] = skybox (unit 0), objects from 1 onward
 uniform sampler2D obj_textures[16];
 
-// Structure Objects respectant le padding de 16bits
+// Object struct respecting 16-bit padding
 struct t_gpu_sphere
 {
 	vec3	center;
 	float	radius;
 	vec4	color;
 	int		emissive;
-	float	intensity; // soleil uniquement (source de lumiere)
-	int		tex_index; // -1 = pas de texture, couleur plate
+	float	intensity; // sun only (light source)
+	int		tex_index; // -1 = no texture, flat color
 	float	shininess;
 };
 
@@ -95,6 +95,8 @@ layout(std430, binding = 4) readonly buffer BlackholeBuffer
 
 /* ——— Skybox ———————————————————————————————————————————————————————————————————————————— */
 
+/*	Samples the starry sky (equirectangular mapping) in the given
+	direction. Same lon/lat formula as get_base_color.	*/
 vec4 sample_skybox(vec3 direction)
 {
 	float lon = atan(direction.z, direction.x);
@@ -105,11 +107,13 @@ vec4 sample_skybox(vec3 direction)
 
 
 
-/* ——— Calcul d'intercection ——————————————————————————————————————————————————————————————— */
+/* ——— Intersection calculations ——————————————————————————————————————————————————————————— */
 
 #define OBJ_TYPE_SPHERE 0
 #define OBJ_TYPE_RING   1
 
+/*	Ray/segment - sphere intersection (classic quadratic equation).
+	t_max bounds the test to a segment rather than an infinite ray.	*/
 bool hit_sphere(vec3 ray_origin, vec3 ray_dir, t_gpu_sphere sph, float t_max, out float t)
 {
 	vec3 oc = ray_origin - sph.center;
@@ -120,7 +124,7 @@ bool hit_sphere(vec3 ray_origin, vec3 ray_dir, t_gpu_sphere sph, float t_max, ou
 	if (disc < 0.0)
 		return false;
 	t = (-b - sqrt(disc)) / a;
-	// Vu qu'on test un segment et pas un ray infinie je rajoute t > t_max
+	// Since we're testing a segment and not an infinite ray, add t > t_max check
 	if (t < 0.0 || t > t_max)
 		t = (-b + sqrt(disc)) / a;
 	if (t < 0.0 || t > t_max)
@@ -128,6 +132,8 @@ bool hit_sphere(vec3 ray_origin, vec3 ray_dir, t_gpu_sphere sph, float t_max, ou
 	return (true);
 }
 
+/*	Ray/segment - ring plane intersection, then checks that the point
+	falls between inner_rad and outer_rad.	*/
 bool hit_ring(vec3 ray_origin, vec3 ray_dir, t_gpu_ring rg, float t_max, out float t)
 {
 	float dir = dot(ray_dir, rg.normal);
@@ -141,20 +147,15 @@ bool hit_ring(vec3 ray_origin, vec3 ray_dir, t_gpu_ring rg, float t_max, out flo
 	return (diff >= rg.inner_rad && diff <= rg.outer_rad);
 }
 
-// Test commun sphere/anneau, reutilise pour un segment (t_max = 1.0) comme
-// pour un rayon d'ombre (t_max = distance a la lumiere) : ne renvoie que
-// l'objet le plus proche trouve, jamais sa couleur (calculee plus tard,
-// une seule fois, par l'appelant).
-// skip_emissive : ignore les soleils (comme minirt, qui ne teste les
-// soleils que si flag_dist == 0) -- un rayon d'ombre ne doit jamais se
-// faire bloquer par le soleil qu'il vise ou par un autre soleil.
+/*	Shared sphere/ring test (segment or shadow ray) : returns the
+	closest object, never its color. skip_emissive ignores suns.	*/
 bool check_hit(vec3 ray_origin, vec3 ray_dir, float t_max, bool skip_emissive,
 		out float best_t, out int type, out int index)
 {
 	bool	hit;
 	float	t;
 
-	best_t = t_max + 1.0; // > t_max, donc "rien trouve" au depart
+	best_t = t_max + 1.0; // > t_max, so "nothing found" initially
 	hit = false;
 	for (int i = 0; i < spheres.length(); i++)
 		if (!(skip_emissive && spheres[i].emissive == 1)
@@ -176,6 +177,7 @@ bool check_hit(vec3 ray_origin, vec3 ray_dir, float t_max, bool skip_emissive,
 	return (hit);
 }
 
+/*	Flat color of a hit object (fallback without a texture).	*/
 vec4 get_hit_color(int type, int index)
 {
 	if (type == OBJ_TYPE_SPHERE)
@@ -183,6 +185,8 @@ vec4 get_hit_color(int type, int index)
 	return (ring[index].color);
 }
 
+/*	Normal at the hit point (sphere : radial ; ring : fixed plane
+	normal).	*/
 vec3 get_hit_normal(vec3 hit_point, int type, int index)
 {
 	if (type == OBJ_TYPE_SPHERE)
@@ -190,6 +194,7 @@ vec3 get_hit_normal(vec3 hit_point, int type, int index)
 	return (ring[index].normal);
 }
 
+/*	Specular exponent of the hit object (sphere or ring).	*/
 float get_shininess(int type, int index)
 {
 	if (type == OBJ_TYPE_SPHERE)
@@ -197,13 +202,8 @@ float get_shininess(int type, int index)
 	return (ring[index].shininess);
 }
 
-// Couleur de base au point d'impact : texture si tex_index >= 0, sinon
-// couleur plate (get_hit_color, comportement d'avant les textures).
-// Sphere : mapping lon/lat classique (meme formule que sample_skybox),
-// applique a la direction centre -> point d'impact.
-// Anneau : mapping radial (u, du bord interieur au bord exterieur) et
-// angulaire (v, autour de l'anneau) -- deux vecteurs perpendiculaires a
-// la normale servent de base pour mesurer l'angle.
+/*	Color at the hit point : texture if tex_index >= 0 (lon/lat mapping
+	for a sphere, radial/angular for a ring), otherwise flat color.	*/
 vec4 get_base_color(int type, int index, vec3 hit_point)
 {
 	vec3	dir;
@@ -241,6 +241,9 @@ vec4 get_base_color(int type, int index, vec3 hit_point)
 
 
 /* ——— Light manager —————————————————————————————————————————————————————————————————————— */
+
+/*	Ray-traced shadow for a classic point light, advancing obstacle by
+	obstacle until full shadow or the light is reached.	*/
 float shadow_ray(vec3 hit_pos, vec3 hit_normal, vec3 light_dir, float light_norm)
 {
 	float	shadow;
@@ -260,17 +263,15 @@ float shadow_ray(vec3 hit_pos, vec3 hit_normal, vec3 light_dir, float light_norm
 			break;
 		color = get_hit_color(type, index);
 		shadow += (1.0 - shadow) * color.a;
-		// On avance jusqu'au point d'impact trouve (pas jusqu'a hit_pos) :
-		// sinon on retombe indefiniment sur le meme obstacle.
+		// Advance to the hit point found (not to hit_pos) : otherwise
+		// we keep hitting the same obstacle indefinitely.
 		origin = origin + best_t * light_dir + light_dir * 0.001;
 	}
 	return (shadow);
 }
 
-// Calcul partage pour une source ponctuelle, qu'elle vienne du buffer
-// lumiere (light[]) ou d'un soleil (spheres[] avec emissive == 1) --
-// meme principe que calc_one_light dans minirt (light_calc_bonus.c),
-// appelee depuis les deux boucles de light_manager.
+/*	Shared computation for a point light (light[] or sun) : diffuse +
+	specular, called from both loops in light_manager.	*/
 void accumulate_light(vec3 hit_pos, vec3 hit_normale, vec3 light_pos,
 		vec3 light_color, float light_intensity, float shininess,
 		inout vec3 diffuse, inout vec3 specular)
@@ -279,12 +280,12 @@ void accumulate_light(vec3 hit_pos, vec3 hit_normale, vec3 light_pos,
 	float light_norm = length(light_dir);
 	light_dir = normalize(light_dir);
 	float coef_dif = dot(hit_normale, light_dir);
-	// Dans minirt j'ai du gere un cas particulier pour ring ici
+	// In minirt I had to handle a special case for ring here
 	//if (hit->object->type == OBJ_RING)
 	//ctx.coef_d = fabs(ctx.coef_d);
 	if (coef_dif > 0.0)
 	{
-		// Application de la lumiere
+		// Applying the light
 		float shadow = shadow_ray(hit_pos, hit_normale, light_dir, light_norm);
 
 		//Diffuse
@@ -303,14 +304,8 @@ void accumulate_light(vec3 hit_pos, vec3 hit_normale, vec3 light_pos,
 	}
 }
 
-// Ombre douce analytique (methode d'Orion Sky Lawlor) : compare des
-// angles (soleil, occulteur) vus depuis le point eclaire plutot que de
-// tirer des rayons -- degrade rond et net des le premier echantillon,
-// aucun bruit. Ne gere que les occulteurs spheriques (les soleils sont
-// exclus, comme dans check_hit -- un soleil ne bloque jamais un autre).
-// self_index : sphere sur laquelle se trouve hit_pos (ou -1) -- exclue de
-// sa propre boucle d'occulteurs, sinon le point se teste lui-meme a une
-// distance exactement egale a son rayon (cas limite degenere de asin()).
+/*	Analytic soft shadow (Lawlor method) : compares angles instead of
+	casting rays, spherical occluders only.	*/
 float sphere_light_shadow(vec3 hit_pos, vec3 light_pos, float light_radius,
 		int self_index)
 {
@@ -343,11 +338,8 @@ float sphere_light_shadow(vec3 hit_pos, vec3 light_pos, float light_radius,
 	return (shadow);
 }
 
-// Meme forme que accumulate_light, mais l'ombre est calculee de facon
-// analytique plutot que par lancer de rayon -- pas de fonction commune
-// possible en GLSL (pas de pointeur de fonction) sans perdre le
-// court-circuit sur coef_dif <= 0.0 (evite le calcul d'ombre quand la
-// face est deja a l'ombre propre, cote oppose de l'objet).
+/*	Same shape as accumulate_light, but the shadow is computed
+	analytically (sphere_light_shadow) instead of via ray casting.	*/
 void accumulate_sun_light(vec3 hit_pos, vec3 hit_normale, vec3 light_pos,
 		vec3 light_color, float light_intensity, float light_radius,
 		float shininess, int self_index,
@@ -374,6 +366,8 @@ void accumulate_sun_light(vec3 hit_pos, vec3 hit_normale, vec3 light_pos,
 	}
 }
 
+/*	Combines ambient + diffuse + specular over all lights/suns, then
+	applies the result to the base color.	*/
 vec4 light_manager(vec3 hit_pos, vec3 hit_normale, vec4 base_color,
 		int self_index, float shininess)
 {
@@ -381,13 +375,13 @@ vec4 light_manager(vec3 hit_pos, vec3 hit_normale, vec4 base_color,
 	vec3 ambient = vec3(0, 0, 0) + ambient_color * ambient_ratio;
 	vec3 specular = vec3(0, 0, 0);
 
-	// Boucle sur les lights
+	// Loop over the lights
 	for (int i = 0; i < nbr_light; ++i)
 		accumulate_light(hit_pos, hit_normale, light[i].center,
 			light[i].color.rgb, light[i].intensity, shininess,
 			diffuse, specular);
 
-	// Boucle sur les soleils (ombre analytique, pas de rayon)
+	// Loop over the suns (analytic shadow, no ray)
 	for (int i = 0; i < spheres.length(); ++i)
 		if (spheres[i].emissive == 1)
 			accumulate_sun_light(hit_pos, hit_normale, spheres[i].center,
@@ -410,7 +404,10 @@ vec4 light_manager(vec3 hit_pos, vec3 hit_normale, vec4 base_color,
 
 
 
-/* ——— Test des objets touches le long d'un segment ——————————————————————————————————————— */
+/* ——— Testing objects hit along a segment ——————————————————————————————————————————————— */
+
+/*	Tests the closest intersection along a segment and computes its
+	final color (direct if emissive, otherwise via light_manager).	*/
 bool test_segment_objects(vec3 ray_origin, vec3 ray_dir, out vec4 hit_color)
 {
 	float	best_t;
@@ -439,10 +436,9 @@ bool test_segment_objects(vec3 ray_origin, vec3 ray_dir, out vec4 hit_color)
 
 
 
-/* ——— Calcul de la trajectoire d'un photon ———————————————————————————————————————————————— */
-/* Intégration directe en 3D (position + vitesse), pas de réduction 2D/reconstruction —
-   approche "starless" (rantonels/starless), évite toute construction de base (e1/e2)
-   et donc toute singularité de type produit vectoriel proche de zéro. */
+/* ——— Photon trajectory calculation ——————————————————————————————————————————————————————— */
+/* Direct 3D integration (position+velocity), "starless" approach --
+   avoids building any basis (e1/e2) and its zero-cross-product singularity. */
 
 struct t_state
 {
@@ -450,6 +446,7 @@ struct t_state
 	vec3	vel;
 };
 
+/*	Component-wise addition of two states (position + velocity).	*/
 t_state add_state(t_state a, t_state b)
 {
 	t_state	r;
@@ -459,6 +456,7 @@ t_state add_state(t_state a, t_state b)
 	return (r);
 }
 
+/*	Multiplies a state (position + velocity) by a scalar.	*/
 t_state scale_state(t_state a, float s)
 {
 	t_state	r;
@@ -468,7 +466,7 @@ t_state scale_state(t_state a, float s)
 	return (r);
 }
 
-// F(r) = -3M h² / r⁴ (forme vectorielle de l'équation de Binet)
+/*	F(r) = -3M h² / r⁴ (vector form of the Binet equation)	*/
 t_state orbit_derivative(t_state s, float h2, float M)
 {
 	t_state	d;
@@ -480,7 +478,7 @@ t_state orbit_derivative(t_state s, float h2, float M)
 	return (d);
 }
 
-// Calcul de RK4
+/*	RK4 step.	*/
 t_state rk4_step(t_state s, float h2, float M, float h)
 {
 	t_state	k1;
@@ -498,6 +496,8 @@ t_state rk4_step(t_state s, float h2, float M, float h)
 	return (add_state(s, scale_state(sum, h / 6.0)));
 }
 
+/*	Integrates the photon's geodesic in 3D (RK4, starless approach)
+	and tests objects at each step until horizon, escape, or failure.	*/
 vec4 photon_trajectory(vec3 dir)
 {
 	t_state	s;
@@ -509,7 +509,7 @@ vec4 photon_trajectory(vec3 dir)
 	vec3	bh_pos;
 	float	bh_mass;
 
-	// Appelee uniquement si blackholes.length() > 0
+	// Called only if blackholes.length() > 0
 	bh_pos = blackholes[0].center;
 	bh_mass = blackholes[0].mass;
 
@@ -521,8 +521,8 @@ vec4 photon_trajectory(vec3 dir)
 
 	rs = 2.0 * bh_mass;
 
-	// distance d'evasion : toujours r0 + une marge fixe, jamais un multiple de r0
-	// (sinon la distance a parcourir explose avec r0 et la perf s'effondre au loin)
+	// escape distance : always r0 + a fixed margin, never a multiple of r0
+	// (otherwise the distance to travel explodes with r0 and perf tanks far away)
 	r_max = length(s.pos) + 50.0 * rs;
 
 	for (int i = 0; i < steps; i++)
@@ -532,8 +532,8 @@ vec4 photon_trajectory(vec3 dir)
 		s = rk4_step(s, h2, bh_mass, step_size * clamp(r / rs, 0.1, 200.0));
 		r = length(s.pos);
 
-		// Objets testes en coordonnees absolues (celles du .ss), donc on
-		// retranslate le segment (relatif au trou noir) en espace monde.
+		// Objects are tested in absolute coordinates (the .ss ones), so
+		// the segment (relative to the black hole) is translated to world space.
 		vec4 obj_color;
 		vec3 ray_dir = s.pos - pos_prev;
 		if (test_segment_objects(pos_prev + bh_pos, ray_dir, obj_color))
@@ -541,19 +541,21 @@ vec4 photon_trajectory(vec3 dir)
 
 		if (r < rs)
 		{
-			// Horizon franchi -> noir
+			// Horizon crossed -> black
 			return vec4 (0, 0, 0, 1);
 		}
 		if (r > r_max)
 		{
-			// Évasion -> échantillonner le skybox avec la vitesse finale
+			// Escape -> sample the skybox with the final velocity
 			return sample_skybox(normalize(s.vel));
 		}
 	}
-	// Si on arrive ici sans être sorti : budget de pas épuisé
+	// If we get here without exiting : step budget exhausted
 	return vec4 (0, 0, 0, 1);
 }
 
+/*	Classic straight-line trajectory (no black hole) : tests objects
+	along the ray, otherwise returns the sky.	*/
 vec4 classic_trajectory(vec3 dir)
 {
 	vec4	obj_color;
@@ -566,6 +568,8 @@ vec4 classic_trajectory(vec3 dir)
 
 /* ——— Main —————————————————————————————————————————————————————————— */
 
+/*	Entry point of the compute shader : one pixel per invocation, N
+	supersampled rays, averaged then exposed/gamma-corrected.	*/
 void main()
 {
 	ivec2	pixel = ivec2(gl_GlobalInvocationID.xy);
@@ -574,7 +578,7 @@ void main()
 	if (pixel.x >= size.x || pixel.y >= size.y || size.x == 0 || size.y == 0)
 		return;
 
-	// Boucle d'envoi de rayon par pixel
+	// Loop firing rays per pixel
 	vec4	color = vec4(0, 0, 0, 0);
 	vec2	inv_size = 1.0 / vec2(size);
 	for (int i = 0; i < nbr_ray; i++)
@@ -582,12 +586,12 @@ void main()
 		vec2	offset = fract(vec2(i) * vec2(GOLDEN_NBR_X, GOLDEN_NBR_Y));
 
 		vec2	uv = (vec2(pixel) + offset) * inv_size;
-		// Invertion de l'affichage pour coller a +x a droite.
+		// Flips the display to match +x on the right.
 		uv.x = 1.0 - uv.x;
 
 		vec3	dir = normalize(cam_corner + uv.x * cam_hor + uv.y * cam_ver - cam_origin);
 
-		// Raytracer classic vs nouveau raytracer
+		// Classic raytracer vs new raytracer
 		if (blackholes.length() > 0)
 			color += photon_trajectory(dir);
 		else

@@ -1,17 +1,14 @@
 /* ************************************************************************** */
 /*   Space_Simulator — build_buffer.c                                         */
+/*   Uploads the C-side scene to the GPU SSBOs (spheres, rings, lights,       */
+/*   black holes) and binds object textures.                                  */
 /* ************************************************************************** */
 
 #include "shader.h"
 #include "../exit/exit.h"
 
-// Unite de texture partagee entre upload_sphere_buffer et
-// upload_ring_buffer (les deux puisent dans le meme obj_textures[]) --
-// static locale a la fonction (pas de global de fichier), remise a 1 via
-// reset=true en debut de upload_sphere_buffer (toujours appelee en
-// premier, voir parsing.c/poll_events.c) ; l'unite 0 reste au skybox.
-// Pas de deduplication (retire temporairement pour le debug) : deux
-// objets partageant le meme fichier texture prennent chacun leur unite.
+/*	Texture unit shared between upload_sphere_buffer/upload_ring_buffer
+	(reset via reset=true, unit 0 reserved for the skybox).	*/
 static int	bind_object_texture(t_data *d, t_texture *tex, bool reset)
 {
 	static int	next_unit = 1;
@@ -29,10 +26,8 @@ static int	bind_object_texture(t_data *d, t_texture *tex, bool reset)
 	return (unit);
 }
 
-// Un soleil est une sphere emissive : on le range dans le meme buffer
-// que les spheres classiques (emissive = 1), a la suite. Les vraies
-// spheres sont remplies en premier (emissive = 0, deja zero via
-// ft_calloc), puis les soleils.
+/*	A sun is an emissive sphere, stored in the same buffer right after
+	the regular spheres (spheres first, then suns).	*/
 void	upload_sphere_buffer(t_data *d)
 {
 	t_gpu_sphere	*spheres;
@@ -100,9 +95,8 @@ void	upload_sphere_buffer(t_data *d)
 	free(spheres);
 }
 
-// shape.ring.center est un pointeur (aliase le centre de sa sphere
-// parente, voir add_ri) -> il faut le dereferencer avant l'upload, le
-// buffer GPU ne peut pas stocker de pointeur.
+/*	shape.ring.center is a pointer (the parent sphere's center) ->
+	dereferenced before upload, the GPU buffer can't store a pointer.	*/
 void	upload_ring_buffer(t_data *d)
 {
 	t_gpu_ring	*rings;
@@ -154,8 +148,8 @@ void	upload_ring_buffer(t_data *d)
 	free(rings);
 }
 
-// Couleurs pre-normalisees en C (/255.0f), meme convention que les
-// spheres/anneaux : rien ne divise plus par 255 cote shader.
+/*	Colors pre-normalized in C (/255.0f), same convention as
+	spheres/rings : nothing divides by 255 on the shader side anymore.	*/
 void	upload_light_buffer(t_data *d)
 {
 	t_gpu_light	*lights;
@@ -184,9 +178,8 @@ void	upload_light_buffer(t_data *d)
 	free(lights);
 }
 
-// Stockage complet (0, 1 ou N trous noirs) meme si, pour l'instant, seul
-// blackholes[0] courbe reellement la trajectoire cote shader (voir
-// photon_trajectory / "Dette technique").
+/*	Full storage (0, 1, or N black holes), even though only blackholes[0]
+	actually curves the trajectory shader-side (see "Dette technique").	*/
 void	upload_blackhole_buffer(t_data *d)
 {
 	t_gpu_blackhole	*bh;
