@@ -1,14 +1,16 @@
 /* ************************************************************************** */
-/*   Space_Simulator — format_ss.c                                        */
+/*   Space_Simulator — format_ss.c                                            */
+/*   Parses the .ss-specific entities (lights, black hole, spheres,           */
+/*   rings, suns) into the simulation.                                        */
 /* ************************************************************************** */
 
 #include "../parsing.h"
 #include "../../exit/exit.h"
 #include <stdio.h>
 
-// "NULL" litteral dans le fichier -> pas de nom (NULL), sinon copie la
-// chaine. Utilise par tous les add_* pour rester coherent avec la
-// convention deja en place pour les textures optionnelles.
+/*	"NULL" literal in the file -> no name (NULL), otherwise copies the
+	string. Used by every add_* to stay consistent with the convention
+	already in place for optional textures.	*/
 static char	*get_name(char *s)
 {
 	if (!ft_strncmp(s, "NULL", 5))
@@ -16,6 +18,7 @@ static char	*get_name(char *s)
 	return (ft_strdup(s, 0));
 }
 
+/*	<Identifier> <Name> <Position> <Intensity> <Color>.	*/
 void	add_light(t_data *d, char **line_split)
 {
 	static int	i = 0;
@@ -38,8 +41,7 @@ void	add_light(t_data *d, char **line_split)
 		i = 0;
 }
 
-// <Identifiant> <Nom> <Position> <Masse> — trou noir traite a part,
-// hors de l'union t_object (voir "Dette technique" du README).
+/*	<Identifier> <Name> <Position> <Mass>.	*/
 void	add_bh(t_data *d, t_blackhole *bh, char **l_split)
 {
 	if (check_idx_string_tab(l_split, 3))
@@ -56,9 +58,8 @@ void	add_bh(t_data *d, t_blackhole *bh, char **l_split)
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_BH_ARGS_MSG);
 }
 
-// <Identifiant> <Nom> <Position> <Rayon> <Couleur> <Shininess>
-// <RotationSpeed> <Masse> <Velocity> <Texture> <Bumpmap> — masse/velocity
-// pas encore branches (physique desactivee), reserves pour plus tard.
+/*	<Identifier> <Name> <Position> <Diameter> <Color> <Shininess>
+	<RotationSpeed> <Mass> <Velocity> <Texture> <Bumpmap>.	*/
 void	add_sp_solar(t_data *d, t_object *o, char **l_split)
 {
 	if (check_idx_string_tab(l_split, 10))
@@ -89,8 +90,8 @@ void	add_sp_solar(t_data *d, t_object *o, char **l_split)
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_SP_ARGS_MSG);
 }
 
-// <Identifiant> <Nom> <Normale> <RayonInterieur> <RayonExterieur>
-// <Couleur> <Shininess> <Texture> <Bumpmap>
+/*	<Identifier> <Name> <Normal> <InnerRadius> <OuterRadius>
+	<Color> <Shininess> <Texture> <Bumpmap>	*/
 void	add_ri(t_data *d, t_object *o, char **l_split, int idx)
 {
 	if (check_idx_string_tab(l_split, 8))
@@ -128,9 +129,9 @@ void	add_ri(t_data *d, t_object *o, char **l_split, int idx)
 		exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_RI_ARGS_MSG);
 }
 
-// <Identifiant> <Nom> <Position> <Rayon> <Couleur> <Shininess> <Intensite>
-// <Masse> <Velocity> <Texture> <Bumpmap> — masse/velocity pas encore
-// branches.
+/*	<Identifier> <Name> <Position> <Diameter> <Color> <Shininess> <Intensity>
+	<Mass> <Velocity> <Texture> <Bumpmap> -- mass/velocity not wired
+	yet.	*/
 void	add_so(t_data *d, t_sun *s, char **l)
 {
 	if (check_idx_string_tab(l, 10))

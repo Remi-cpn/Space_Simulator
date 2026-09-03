@@ -1,12 +1,13 @@
 /* ************************************************************************** */
 /*   Space_Simulator — format_unique.c                                        */
+/*   Parses the singleton scene elements (camera, ambient light) -- at        */
+/*   most one of each per scene.                                              */
 /* ************************************************************************** */
 
 #include "../parsing.h"
 #include "../../exit/exit.h"
 
-// Modifier car pas vraiment de parsing encore.
-// Camera codee en dur : origine (0,0,-20), direction +z, fov 70.
+/*	<Identifier> <Origin> <Direction> <Fov>.	*/
 void	add_cam(t_data *d, char **line_split)
 {
 	static bool cam = false;
@@ -33,6 +34,7 @@ void	add_cam(t_data *d, char **line_split)
 		exit_prog(d, ERROR_FILE_CAM, ERROR_FILE_CAM_ARGS_MSG);
 }
 
+/*	<Identifier> <Intensity> <Color>.	*/
 void	add_al(t_data *d, char **line_split)
 {
 	static bool al = false;

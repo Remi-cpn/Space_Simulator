@@ -138,6 +138,15 @@ Prend en argument un fichier de scène (`.ss`, ex. `data_files/test.ss`) :
 ./Space_Simulator data_files/test.ss
 ```
 
+### Scènes disponibles
+
+| Fichier | Contenu |
+|---------|---------|
+| `test.ss` | Scène minimale (sphère + soleil + trou noir) pour valider rapidement une modification. |
+| `blackhole.ss` | Trou noir seul, sans objet, pour isoler le rendu de la lentille gravitationnelle. |
+| `eclipse.ss` | Soleil petit et loin → bord d'ombre net (comparer avec `solar_system.ss`, voir [Éclairage](#éclairage)). |
+| `solar_system.ss` | Système solaire stylisé complet (8 planètes, anneaux, textures). |
+
 ### Autres cibles
 
 - `make clean` — supprime les fichiers objets.
@@ -325,7 +334,7 @@ du soleil (`rayon_soleil` dans la formule) — une scène où le soleil est
 gros et proche des planètes (choix esthétique pour rester lisible à
 l'écran, voir `data_files/solar_system.ss`) produit donc une pénombre
 proportionnellement large, pas un défaut de la formule. Comparer avec
-`data_files/eclipse_test.ss` (soleil petit et loin) pour voir un bord net,
+`data_files/eclipse.ss` (soleil petit et loin) pour voir un bord net,
 comparable à une vraie ombre d'éclipse.
 
 ---

@@ -1,10 +1,14 @@
 /* ************************************************************************** */
-/*   Space_Simulator — parcing_file.c                                         */
+/*   Space_Simulator — parsing_file.c                                         */
+/*   Reads a scene file line by line and dispatches each line to the          */
+/*   right parsing function.                                                  */
 /* ************************************************************************** */
 
 #include "parsing.h"
 #include "../exit/exit.h"
 
+/*	Dispatches to the parsing function based on the identifier found
+	at the start of the line.	*/
 static void	pars_line_ss(t_data *d, char *line)
 {
 	static int	i = 0;
@@ -40,43 +44,15 @@ static void	pars_line_ss(t_data *d, char *line)
 	k = (k != d->sim.nb_bh) * k;
 }
 
-// static void	pars_line_rt(t_parsing *p, t_world *w, char *line)
-// {
-// 	static int	i = 0;
-
-// 	p->line_split = ft_split(line, ' ');
-// 	if (!p->line_split || !p->line_split[0])
-// 		exit_prog_pars(p, ERROR_MALLOC, ERROR_MALLOC_MSG);
-// 	if (!ft_strncmp(p->line_split[0], "A", 2))
-// 		add_al(p, w, p->line_split);
-// 	else if (!ft_strncmp(p->line_split[0], "C", 2))
-// 		add_cam(p, w, p->line_split);
-// 	else if (!ft_strncmp(p->line_split[0], "L", 2))
-// 		add_light(p, w, p->line_split);
-// 	else if (!ft_strncmp(p->line_split[0], "sp", 3))
-// 		add_sp(p, &w->objects[i++], p->line_split);
-// 	else if (!ft_strncmp(p->line_split[0], "pl", 3))
-// 		add_pl(p, &w->objects[i++], p->line_split);
-// 	else if (!ft_strncmp(p->line_split[0], "cy", 3))
-// 		add_cy(p, &w->objects[i++], p->line_split);
-// 	else if (!ft_strncmp(p->line_split[0], "co", 3))
-// 		add_co(p, &w->objects[i++], p->line_split);
-// 	else
-// 		exit_prog_pars(p, ERROR_FILE_ARGS, ERROR_FILE_ARGS_MSG);
-// 	ft_free_array(p->line_split);
-// 	if (i == w->nb_obj)
-// 		i = 0;
-// 	p->line_split = NULL;
-// }
-
+/*	To handle several file types.	*/
 void	pars_line_dispatch(t_data *d, char *line, bool solar)
 {
 	if (solar == true)
 		pars_line_ss(d, line);
-	// else
-	// 	pars_line_rt(p, w, l);
 }
 
+/*	Opens the file given as parameter and extracts its lines one by
+	one to send them for parsing.	*/
 void	pars_file(t_data *d, char *file_name, bool solar)
 {
 	int		fd;

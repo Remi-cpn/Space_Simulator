@@ -1,11 +1,15 @@
 /* ************************************************************************** */
-/*   Space_Simulator — parcing.c                                              */
+/*   Space_Simulator — parsing.c                                              */
+/*   Entry point for scene loading : validates the file, allocates the        */
+/*   scene arrays, parses the file, then uploads/initializes everything.      */
 /* ************************************************************************** */
 
 #include "parsing.h"
 #include "../exit/exit.h"
 #include "../shaders/shader.h"
 
+/*	Calculates the number of objects in the scene for memory
+	allocation.	*/
 static int	init_nb_obj(t_data *d, int nb_light, int nb_sun, int nb_bh,
 	int count_line)
 {
@@ -23,10 +27,9 @@ static int	init_nb_obj(t_data *d, int nb_light, int nb_sun, int nb_bh,
 	return (nb_obj);
 }
 
+/*	Checks the validity of the file extension.	*/
 static int	check_file_name(t_data *d, char *file_name)
 {
-	// if (check_extention(file_name, ".rt") == true)
-	// 	return (1);
 	if (check_extention(file_name, ".ss") == true)
 	{
 		d->ss_file = true;
@@ -35,8 +38,8 @@ static int	check_file_name(t_data *d, char *file_name)
 	return (0);
 }
 
-// Construit la scene (camera, trou noir codes en dur pour l'instant),
-// puis initialise viewport, arbre HUD et skybox.
+/*	Builds the scene (camera, black hole still hardcoded for now),
+	then initializes the viewport, HUD tree and skybox.	*/
 void	parsing(t_data *d, char *file_name)
 {
 	int	count_l;
@@ -59,13 +62,13 @@ void	parsing(t_data *d, char *file_name)
 
 	pars_file(d, file_name, d->ss_file);
 
-	// Upload des objets vers le GPU (une seule fois, scene statique pour la v2)
+	// Uploads the objects to the GPU (once only, static scene for v2)
 	upload_sphere_buffer(d);
 	upload_ring_buffer(d);
 	upload_light_buffer(d);
 	upload_blackhole_buffer(d);
 
-	// Initialisation de la structure simulation
+	// Simulation struct initialization
 	init_sim(d);
 	init_hud(d);
 	d->sim.sky.tex = load_texture(d, "assets/textures/skybox.jpg");

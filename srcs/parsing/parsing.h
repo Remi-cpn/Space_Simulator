@@ -13,19 +13,10 @@
 # include "../../library/librt/librt.h"
 
 
-
 /* ——— Forward declare —————————————————————————————————————————————————————— */
 typedef struct s_data		t_data;
 typedef struct s_vec		t_vec;
 
-/* ——— Struct prototypes ———————————————————————————————————————————————————— */
-// typedef enum e_type
-// {
-// 	INT,
-// 	LONG,
-// 	FLOAT,
-// 	DOUBLE
-// }	t_type;
 
 /* ——— Function prototypes —————————————————————————————————————————————————— */
 void	parsing(t_data *d, char *file_name);

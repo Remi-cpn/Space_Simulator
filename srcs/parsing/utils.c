@@ -1,19 +1,15 @@
 /* ************************************************************************** */
-/*   Space_Simulator — parcing.c                                              */
+/*   Space_Simulator — utils.c                                                */
+/*   Parsing helpers : .ss field parsing (vec/color) and the scene            */
+/*   file's line count.                                                       */
 /* ************************************************************************** */
 
 #include "parsing.h"
 #include "../exit/exit.h"
 #include "../simulation/simulation.h"
 
-// double	get_mass(char *s)
-// {
-// 	double	mass_kg;
-
-// 	mass_kg = strtod(s, NULL);
-// 	return (mass_kg);
-// }
-
+/*	Parses "x,y,z" into a t_vec, with strict validation of the
+	component count and their numeric validity.	*/
 t_vec	get_vec(t_data *d, char *s)
 {
 	t_vec	vec;
@@ -35,6 +31,8 @@ t_vec	get_vec(t_data *d, char *s)
 	return (vec);
 }
 
+/*	Parses "r,g,b" into a t_color (alpha fixed at 255), with
+	validation of the component count and their [0,255] range.	*/
 t_color	get_color(t_data *d, char *s)
 {
 	t_color	color;
@@ -63,28 +61,8 @@ t_color	get_color(t_data *d, char *s)
 	return (color);
 }
 
-// int	count_light(t_parsing *p, char *file_name)
-// {
-// 	int		fd;
-// 	char	*str;
-// 	int		count;
-
-// 	count = 0;
-// 	fd = open(file_name, O_RDONLY);
-// 	if (fd < 0)
-// 		exit_prog_pars(p, ERROR_FILE_NAME, ERROR_FILE_NAME_MSG);
-// 	str = ft_get_next_line(fd);
-// 	while (str)
-// 	{
-// 		if (str[0] == 'L')
-// 			count++;
-// 		str = ft_freenull(str);
-// 		str = ft_get_next_line(fd);
-// 	}
-// 	close(fd);
-// 	return (count);
-// }
-
+/*	Counts the file's valid lines (for nb_obj) and tallies
+	nb_sun/nb_bh/nb_light along the way, in a single read.	*/
 int	count_line(t_data *d, char *file_name)
 {
 	int		fd;

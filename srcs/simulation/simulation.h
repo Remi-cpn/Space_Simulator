@@ -16,7 +16,7 @@
 
 /* ——— DEFINE     ——————————————————————————————————————————————————————————— */
 # define RENDER_DIST 5000.0
-# define SHADOW_DIST 2000.0
+# define SHADOW_DIST 4000.0
 
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
@@ -99,19 +99,12 @@ typedef struct s_sun
 {
 	char		*name;
 	t_vec		pos;
-	//t_physics	param;
 	double		radius;
 	t_color		color;
 	double		intensity;
 	t_texture	texture;
 	double		shininess;
 }	t_sun;
-
-// typedef struct s_plane
-// {
-// 	t_point		point;
-// 	t_vec		normal;
-// }	t_plane;
 
 typedef struct s_ring
 {
@@ -125,26 +118,9 @@ typedef struct s_sphere
 {
 	t_point		center;
 	double		radius;
-	//t_physics	param;
 	double		rotation;
 	double		rotation_speed;
 }	t_sphere;
-
-// typedef struct s_cylinder
-// {
-// 	t_point	center;
-// 	t_vec	axis;
-// 	double	radius;
-// 	double	height;
-// }	t_cylinder;
-
-// typedef struct s_cone
-// {
-// 	t_point	apex;
-// 	t_vec	axis;
-// 	double	angle;
-// 	double	height;
-// }	t_cone;
 
 typedef struct s_object
 {
@@ -157,9 +133,6 @@ typedef struct s_object
 	union u_shape
 	{
 		t_sphere		sphere;
-	//	t_cone			cone;
-	//	t_plane			plane;
-	//	t_cylinder		cylinder;
 		t_ring			ring;
 	}	shape;
 }	t_object;

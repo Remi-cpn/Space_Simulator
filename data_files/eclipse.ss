@@ -1,4 +1,9 @@
 
+# Test scene for shadow sharpness. Here the sun is small and far
+# away. Its angular radius, seen from the planet, is much closer
+# to a realistic case. The moon's shadow on the planet should be
+# much sharper.
+
 # ————————————————————————————————————————————————————————————————————————
 # Format .ss One line per entity, fields separated by a space.
 #
@@ -16,15 +21,12 @@
 # A ri must directly follow the sphere it belongs to.
 # ————————————————————————————————————————————————————————————————————————
 
-A 0.1 255,255,255
-C 0,0,-20 0,0,1 70
-L NULL 0,30,0 0.8 255,255,255
+A 0 255,255,255
+C 300,40,-150 0.508,-0.203,0.838 40
 
 # SUN
-so NULL -20,0,0 10 255,240,200 32 0.8 1.0 0,0,0 NULL NULL
+so Soleil 0,0,0 10 255,240,200 32 1.0 1.0 0,0,0 NULL NULL
 
 # Planets
-sp Terre 20,0,0 10 100,150,255 32 0 3.003e-6 0,158.0,0 NULL NULL
-
-# Black hole
-bh 1 0,0,0 1
+sp Cible 400,0,0 30 100,150,255 32 0 1.0 0,0,0 NULL NULL
+sp Lune 350,0,0 8 180,180,180 32 0 1.0e-3 0,0,0 NULL NULL
