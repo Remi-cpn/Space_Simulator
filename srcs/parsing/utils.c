@@ -41,8 +41,7 @@ t_color	get_color(t_data *d, char *s)
 
 	sp = ft_split(s, ',');
 	if (!sp || !sp[0] || !sp[1] || !sp[2] || sp[3]
-		|| (sp[0] && !int_valid(sp[0])) || (sp[1] && !int_valid(sp[1]))
-		|| (sp[3] && !int_valid(sp[2])))
+		|| !int_valid(sp[0]) || !int_valid(sp[1]) || !int_valid(sp[2]))
 	{
 		ft_free_array(sp);
 		exit_prog(d, ERROR_FILE_ARGS, ERROR_FILE_ARGS_MSG);

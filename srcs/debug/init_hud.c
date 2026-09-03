@@ -22,6 +22,19 @@ static void	init_hud_params(t_data *d, t_hud_db *cat)
 	hud_append(cat, &cat->child, hud_new(d, "wheel coef", HUD_UINT, &d->wheel_coef));
 	hud_append(cat, &cat->child, hud_new(d, "exposure", HUD_FLOAT, &d->exposure));
 	hud_append(cat, &cat->child, hud_new(d, "gamma", HUD_FLOAT, &d->gamma));
+	hud_append(cat, &cat->child, hud_new(d, "shadow dist", HUD_FLOAT,
+			&d->sim.shadow_dist));
+	hud_append(cat, &cat->child, hud_new(d, "steps", HUD_INT, &d->steps));
+	hud_append(cat, &cat->child, hud_new(d, "step size", HUD_FLOAT,
+			&d->step_size));
+	hud_append(cat, &cat->child, hud_new(d, "ambient ratio", HUD_DOUBLE,
+			&d->sim.ambient_ratio));
+	hud_append(cat, &cat->child, hud_new(d, "ambient r", HUD_INT,
+			&d->sim.ambient.r));
+	hud_append(cat, &cat->child, hud_new(d, "ambient g", HUD_INT,
+			&d->sim.ambient.g));
+	hud_append(cat, &cat->child, hud_new(d, "ambient b", HUD_INT,
+			&d->sim.ambient.b));
 }
 
 /*	One named sub-category per black hole, with mass/position as
@@ -64,6 +77,8 @@ static void	init_hud_suns(t_data *d, t_hud_db *cat)
 				&d->sim.suns[i].radius));
 		hud_append(inst, &inst->child, hud_new(d, "intensity", HUD_DOUBLE,
 				&d->sim.suns[i].intensity));
+		hud_append(inst, &inst->child, hud_new(d, "shininess", HUD_DOUBLE,
+				&d->sim.suns[i].shininess));
 		i++;
 	}
 }
@@ -94,6 +109,8 @@ static void	init_hud_object(t_data *d, t_hud_db *cat, t_object *o)
 		hud_append(inst, &inst->child, hud_new(d, "outer radius", HUD_DOUBLE,
 				&o->shape.ring.outer_rad));
 	}
+	hud_append(inst, &inst->child, hud_new(d, "shininess", HUD_DOUBLE,
+			&o->shininess));
 }
 
 static void	init_hud_objects(t_data *d, t_hud_db *cat)

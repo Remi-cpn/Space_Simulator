@@ -18,6 +18,8 @@
 # bh <Identifier> <Name> <Position> <Mass>
 #
 # NULL (mandatory) -> if no value (name, texture, bumpmap).
+# <Mass>/<Velocity> on sp/so lines must be filled in (line format) but
+# are not used yet (physics disabled).
 # A ri must directly follow the sphere it belongs to.
 # ————————————————————————————————————————————————————————————————————————
 

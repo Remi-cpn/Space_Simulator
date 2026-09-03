@@ -63,9 +63,9 @@ typedef struct s_data
 		unsigned int	wheel_coef;
 		float			exposure;
 		float			gamma;
+		int				steps;
+		float			step_size;
 		bool			ss_file;
-	// Camera
-		int				cam_target;
 	// HUD
 		t_hud_db		*hud_db;
 }	t_data;

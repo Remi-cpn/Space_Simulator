@@ -81,10 +81,11 @@ t_data	init_program(void)
 
 	// Settings
 	d.input = init_input();
-	d.cam_target = -1;
 	d.nbr_ray = 2;
 	d.wheel_coef = 1;
 	d.exposure = 1.0;
 	d.gamma = 1.0;
+	d.steps = 500;
+	d.step_size = 1.0;
 	return (d);
 }

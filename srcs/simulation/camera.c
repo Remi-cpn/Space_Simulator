@@ -13,7 +13,6 @@ static void	rotate_movement(t_data *d, t_camera *cam, double speed_init)
 {
 	double	speed;
 
-	d->cam_target = -1;
 	speed = speed_init;
 	if (d->input.up == true)
 		cam->dir = vec_add(vec_mult_scalar(cam->dir, cos(speed)),
@@ -34,7 +33,6 @@ static void	rotate_movement(t_data *d, t_camera *cam, double speed_init)
 	(WASD + Ctrl/Space for down/up).	*/
 static void	linear_movement(t_data *d, t_camera *cam, double speed)
 {
-	d->cam_target = -1;
 	if (d->input.w == true)
 		cam->origin = vec_add(cam->origin, vec_mult_scalar(cam->dir, speed));
 	if (d->input.s == true)

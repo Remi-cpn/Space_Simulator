@@ -50,8 +50,8 @@ void	params_gl(t_data *d)
 		glUniform3f(glGetUniformLocation(d->program, "cam_corner"), d->sim.cam.corner.x, d->sim.cam.corner.y, d->sim.cam.corner.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_hor"),    d->sim.cam.hor.x,    d->sim.cam.hor.y,    d->sim.cam.hor.z);
 		glUniform3f(glGetUniformLocation(d->program, "cam_ver"),    d->sim.cam.ver.x,    d->sim.cam.ver.y,    d->sim.cam.ver.z);
-		glUniform1i(glGetUniformLocation(d->program, "steps"), 500);
-		glUniform1f(glGetUniformLocation(d->program, "step_size"), 1.0f);
+		glUniform1i(glGetUniformLocation(d->program, "steps"), d->steps);
+		glUniform1f(glGetUniformLocation(d->program, "step_size"), d->step_size);
 		glUniform1i(glGetUniformLocation(d->program, "nbr_ray"), d->nbr_ray);
 		glUniform1f(glGetUniformLocation(d->program, "exposure"), d->exposure);
 		glUniform1f(glGetUniformLocation(d->program, "gamma"), d->gamma);

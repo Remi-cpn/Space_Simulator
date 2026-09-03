@@ -31,7 +31,7 @@ uniform float	shadow_dist;
 uniform float 	exposure;
 uniform float 	gamma;
 
-// Textures -- obj_textures[0] = skybox (unit 0), objects from 1 onward
+// Textures / obj_textures[0] = skybox (unit 0), objects from 1 onward
 uniform sampler2D obj_textures[16];
 
 // Object struct respecting 16-bit padding

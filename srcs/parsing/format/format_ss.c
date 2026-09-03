@@ -68,7 +68,6 @@ void	add_sp_solar(t_data *d, t_object *o, char **l_split)
 			|| !double_valid(l_split[6]))
 			exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_SP_ARGS_MSG);
 		o->type = OBJ_SPHERE;
-		o->physics_enabled = false;
 		o->name = get_name(l_split[1]);
 		o->shape.sphere.center = get_vec(d, l_split[2]);
 		o->shape.sphere.radius = ft_atod(l_split[3]) / 2.0;
@@ -100,7 +99,6 @@ void	add_ri(t_data *d, t_object *o, char **l_split, int idx)
 			|| !double_valid(l_split[6]))
 			exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_RI_ARGS_MSG);
 		o->type = OBJ_RING;
-		o->physics_enabled = false;
 		if (idx == 0 || d->sim.objs[idx - 1].type != OBJ_SPHERE)
 			exit_prog(d, ERROR_FILE_OBJ, ERROR_FILE_RI_ARGS_MSG);
 		o->name = get_name(l_split[1]);

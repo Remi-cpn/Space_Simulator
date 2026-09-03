@@ -15,7 +15,6 @@
 # include "../../library/librt/librt.h"
 
 /* ——— DEFINE     ——————————————————————————————————————————————————————————— */
-# define RENDER_DIST 5000.0
 # define SHADOW_DIST 4000.0
 
 
@@ -128,7 +127,6 @@ typedef struct s_object
 	char				*name;
 	t_color				color;
 	t_texture			texture;
-	bool				physics_enabled;
 	double				shininess;
 	union u_shape
 	{
