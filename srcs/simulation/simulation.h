@@ -13,6 +13,7 @@
 
 /* ——— Lib Intern ——————————————————————————————————————————————————————————— */
 # include "../../library/librt/librt.h"
+# include "../physics/physics.h"
 
 /* ——— DEFINE     ——————————————————————————————————————————————————————————— */
 # define SHADOW_DIST 4000.0
@@ -103,6 +104,7 @@ typedef struct s_sun
 	double		intensity;
 	t_texture	texture;
 	double		shininess;
+	t_physics	param;
 }	t_sun;
 
 typedef struct s_ring
@@ -119,6 +121,7 @@ typedef struct s_sphere
 	double		radius;
 	double		rotation;
 	double		rotation_speed;
+	t_physics	param;
 }	t_sphere;
 
 typedef struct s_object
@@ -128,6 +131,7 @@ typedef struct s_object
 	t_color				color;
 	t_texture			texture;
 	double				shininess;
+	bool				physics_enabled;
 	union u_shape
 	{
 		t_sphere		sphere;

@@ -22,6 +22,7 @@
 # include "../library/libft/libft.h"
 # include "simulation/simulation.h"
 # include "parsing/parsing.h"
+# include "threading/threading.h"
 
 
 /* ——— Define ——————————————————————————————————————————————————————————————— */
@@ -68,6 +69,8 @@ typedef struct s_data
 		bool			ss_file;
 	// HUD
 		t_hud_db		*hud_db;
+	// Threading
+		t_threading		pool;
 }	t_data;
 
 

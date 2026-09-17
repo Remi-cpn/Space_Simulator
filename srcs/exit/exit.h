@@ -75,6 +75,11 @@
 	# define ERROR_SHADER_LINK_MSG "Invalid shader link"
 	# define ERROR_TEX_LIMIT_MSG "Too many object textures for the GPU texture-unit budget"
 
+// Threading 50
+	# define ERROR_THREAD -50
+	# define ERROR_MUTEX -51
+	# define ERROR_THREAD_MSG "Thread creation failed"
+	# define ERROR_MUTEX_MSG "Mutex initialization failed"
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
 typedef struct s_data		t_data;

@@ -43,6 +43,7 @@ int	main(int ac, char **av)
 	d = init_program();
 
 	parsing(&d, av[1]);
+	init_threads(&d);
 
 	update(&d);
 
