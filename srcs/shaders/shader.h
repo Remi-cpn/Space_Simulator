@@ -37,6 +37,10 @@ typedef struct s_gpu_sphere
 	float	intensity;
 	int		tex_index;
 	float	shininess;
+	float	rotation;
+	float	pad0;
+	float	pad1;
+	float	pad2;
 }	t_gpu_sphere;
 
 typedef struct s_gpu_ring

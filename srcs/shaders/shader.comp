@@ -3,7 +3,7 @@
 #define GOLDEN_NBR_X 0.754877666
 #define GOLDEN_NBR_Y 0.569840296
 #define KS 0.5
-#define RENDER_DIST 5000.0
+#define RENDER_DIST 400000.0
 
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(binding = 0, rgba8) uniform image2D outImg;
@@ -44,6 +44,10 @@ struct t_gpu_sphere
 	float	intensity; // sun only (light source)
 	int		tex_index; // -1 = no texture, flat color
 	float	shininess;
+	float	rotation; // spin angle (radians), objects only, 0 for suns
+	float	pad0;
+	float	pad1;
+	float	pad2;
 };
 
 layout(std430, binding = 1) readonly buffer SphereBuffer
@@ -217,7 +221,8 @@ vec4 get_base_color(int type, int index, vec3 hit_point)
 	if (type == OBJ_TYPE_SPHERE && spheres[index].tex_index >= 0)
 	{
 		dir = normalize(hit_point - spheres[index].center);
-		u = atan(dir.z, dir.x) / (2.0 * 3.14159265) + 0.5;
+		u = (atan(dir.z, dir.x) - spheres[index].rotation)
+				/ (2.0 * 3.14159265) + 0.5;
 		v = asin(dir.y) / 3.14159265 + 0.5;
 		return (texture(obj_textures[spheres[index].tex_index], vec2(u, v)));
 	}

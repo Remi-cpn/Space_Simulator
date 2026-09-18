@@ -16,7 +16,7 @@
 # include "../physics/physics.h"
 
 /* ——— DEFINE     ——————————————————————————————————————————————————————————— */
-# define SHADOW_DIST 4000.0
+# define SHADOW_DIST 400000.0
 
 
 /* ——— Variable prototypes —————————————————————————————————————————————————— */
@@ -104,6 +104,7 @@ typedef struct s_sun
 	double		intensity;
 	t_texture	texture;
 	double		shininess;
+	bool		physics_enabled;
 	t_physics	param;
 }	t_sun;
 

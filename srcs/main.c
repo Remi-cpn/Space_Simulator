@@ -21,9 +21,17 @@ static void	update(t_data *d)
 	{
 		running = lisen_poll_event(d);
 		params_gl(d);
-		update_cam(d, 0.6, 0.1);
+		update_cam(d, 0.6 * d->wheel_coef, 0.1);
 		// Sends the image to the screen
 		SDL_GL_SwapWindow(d->win);
+
+		for (int i = 0; i < d->speed_sim; ++i)
+			recalcul_physics(d, &d->sim);
+		if (d->speed_sim > 0)
+		{
+			upload_sphere_buffer(d);
+			upload_ring_buffer(d);
+		}
 	}
 
 }

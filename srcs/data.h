@@ -53,6 +53,7 @@ typedef struct s_data
 		int				tex_capacity;
 	// Simulation
 		t_simulation	sim;
+		int				speed_sim;
 	// GPU objects
 		GLuint			sphere_ssbo;
 		GLuint			ring_ssbo;

@@ -35,6 +35,8 @@ static void	init_hud_params(t_data *d, t_hud_db *cat)
 			&d->sim.ambient.g));
 	hud_append(cat, &cat->child, hud_new(d, "ambient b", HUD_INT,
 			&d->sim.ambient.b));
+	hud_append(cat, &cat->child, hud_new(d, "speed sim", HUD_INT,
+			&d->speed_sim));
 }
 
 /*	One named sub-category per black hole, with mass/position as

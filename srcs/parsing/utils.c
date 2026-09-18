@@ -8,6 +8,16 @@
 #include "../exit/exit.h"
 #include "../simulation/simulation.h"
 
+/*	Parses a mass value from a string (no unit conversion, just
+	strtod).	*/
+double	get_mass(char *s)
+{
+	double	mass_kg;
+
+	mass_kg = strtod(s, NULL);
+	return (mass_kg);
+}
+
 /*	Parses "x,y,z" into a t_vec, with strict validation of the
 	component count and their numeric validity.	*/
 t_vec	get_vec(t_data *d, char *s)

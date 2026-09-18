@@ -34,10 +34,12 @@ void	calc_acc_sun(t_simulation *sim, int i)
 	t_vec	acc;
 	int		j;
 
+	if (i >= sim->nb_sun || !sim->suns[i].physics_enabled)
+		return ;
 	vec_init(&acc, 0, 0, 0);
 	j = -1;
 	while (++j < sim->nb_sun)
-		if (j != i)
+		if (j != i && sim->suns[j].physics_enabled)
 			acc = vec_add(acc, gravity_from(
 						&sim->suns[i].param,
 						&sim->suns[j].param));

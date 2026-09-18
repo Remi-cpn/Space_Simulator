@@ -18,6 +18,25 @@ static char	*get_name(char *s)
 	return (ft_strdup(s, 0));
 }
 
+/*	Sets up a physics state (mass, initial velocity encoded via
+	Verlet's prev_pos offset). mass == 0.0 means no physics.	*/
+static bool	pars_param(t_data *d, t_point *center, t_physics *param,
+		char *mass, char *velocity, const char *err_msg)
+{
+	t_vec	vel;
+
+	param->cur_pos = *center;
+	param->mass = get_mass(mass);
+	if (param->mass == 0.0)
+		return false;
+	if (param->mass < 0)
+		exit_prog(d, ERROR_FILE_OBJ, err_msg);
+	vel = get_vec(d, velocity);
+	param->prev_pos = vec_sub(*center, vec_mult_scalar(vel, DT));
+	return true;
+}
+
+
 /*	<Identifier> <Name> <Position> <Intensity> <Color>.	*/
 void	add_light(t_data *d, char **line_split)
 {
@@ -75,6 +94,9 @@ void	add_sp_solar(t_data *d, t_object *o, char **l_split)
 		o->shininess = ft_atod(l_split[5]);
 		o->shape.sphere.rotation = 0.0;
 		o->shape.sphere.rotation_speed = ft_atod(l_split[6]);
+		o->physics_enabled = pars_param(d, &o->shape.sphere.center,
+				&o->shape.sphere.param, l_split[7], l_split[8],
+				ERROR_FILE_SP_ARGS_MSG);
 		if (ft_strncmp(l_split[9], "NULL", 5))
 		{
 			if (ft_strncmp(l_split[10], "NULL", 5))
@@ -128,8 +150,8 @@ void	add_ri(t_data *d, t_object *o, char **l_split, int idx)
 }
 
 /*	<Identifier> <Name> <Position> <Diameter> <Color> <Shininess> <Intensity>
-	<Mass> <Velocity> <Texture> <Bumpmap> -- mass/velocity not wired
-	yet.	*/
+	<Mass> <Velocity> <Texture> <Bumpmap> -- mass == 0.0 opts out of
+	physics, same convention as spheres.	*/
 void	add_so(t_data *d, t_sun *s, char **l)
 {
 	if (check_idx_string_tab(l, 10))
@@ -142,6 +164,8 @@ void	add_so(t_data *d, t_sun *s, char **l)
 		s->color = get_color(d, l[4]);
 		s->shininess = ft_atod(l[5]);
 		s->intensity = ft_atod(l[6]);
+		s->physics_enabled = pars_param(d, &s->pos, &s->param, l[7], l[8],
+				ERROR_FILE_SO_ARGS_MSG);
 		if (ft_strncmp(l[9], "NULL", 5))
 		{
 			if (ft_strncmp(l[10], "NULL", 5))

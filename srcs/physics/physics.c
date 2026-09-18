@@ -35,10 +35,11 @@ void	recalcul_pos_obj(t_simulation *sim, int i)
 		if (sim->objs[i].shape.sphere.rotation > 2 * PI)
 			sim->objs[i].shape.sphere.rotation -= 2 * PI;
 	}
-	if (i < sim->nb_sun)
+	if (i < sim->nb_sun && sim->suns[i].physics_enabled)
 	{
 		p = &sim->suns[i].param;
 		calc_new_pos(&p->cur_pos, &p->prev_pos, p);
+		sim->suns[i].pos = p->cur_pos;
 	}
 }
 

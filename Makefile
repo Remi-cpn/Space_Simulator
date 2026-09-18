@@ -25,7 +25,7 @@ LIB			= $(LIBRT_A) $(LIBFT_A)
 
 
 # ——— Sous-dossiers sources —————————————————————————————————————————————————— #
-SUB_DIRS 	:= exit core debug shaders events parsing simulation
+SUB_DIRS 	:= exit core debug shaders events parsing simulation physics threading
 
 
 # ——— Sources ———————————————————————————————————————————————————————————————— #
@@ -55,10 +55,16 @@ SRC_PARSING	= parsing.c \
 SRC_SIMULATION	= init_simulation.c \
 				  camera.c
 
+SRC_PHYSICS	= physics.c \
+			  calcul_acc.c
+
+SRC_THREADING	= init_threads.c \
+				  routine.c
+
 VPATH 		:= $(SRC_DIR) \
          		$(addprefix $(SRC_DIR)/, $(SUB_DIRS))
 
-SRCS		= srcs/main.c external/glad/src/gl.c $(SRC_CORE) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS) $(SRC_PARSING) $(SRC_SIMULATION)
+SRCS		= srcs/main.c external/glad/src/gl.c $(SRC_CORE) $(SRC_EXIT) $(SRC_DEBUG) $(SRC_SHADER) $(SRC_EVENTS) $(SRC_PARSING) $(SRC_SIMULATION) $(SRC_PHYSICS) $(SRC_THREADING)
 
 OBJ			= ${SRCS:%.c=$(OBJ_DIR)/%.o}
 

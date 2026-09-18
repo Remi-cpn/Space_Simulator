@@ -36,3 +36,4 @@ void	add_al(t_data *d, char **line_split);
 int		count_line(t_data *d, char *file_name);
 t_vec	get_vec(t_data *d, char *s);
 t_color	get_color(t_data *d, char *s);
+double	get_mass(char *s);

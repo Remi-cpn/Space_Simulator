@@ -65,6 +65,7 @@ void	upload_sphere_buffer(t_data *d)
 			spheres[j].tex_index = bind_object_texture(d,
 					&d->sim.objs[i].texture, false);
 			spheres[j].shininess = (float)d->sim.objs[i].shininess;
+			spheres[j].rotation = (float)d->sim.objs[i].shape.sphere.rotation;
 			j++;
 		}
 		i++;
